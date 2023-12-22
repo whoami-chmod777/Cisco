@@ -1,0 +1,3 @@
+
+Router1>show cdp neighbors detail
+Router1>show power inline
