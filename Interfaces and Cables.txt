@@ -1,1 +1,31 @@
 
+Cisco switches have a feature called auto-mdix that notices when the wrong cable is used and automatically changes its logic to make the link work.
+
+
+-- How to Use Straight-Through & Crossover Cables --
+
+Similar devices require crossover cables
+· Switch to Switch connections require crossover cables
+· Router to Router connections require crossover cables
+
+Dissimilar devices require  straight-thru cables
+· Switch to Router connections require straight-thru cables
+
+
+
+-- Ethernet Straight-Through Cable --
+
+Transmit on Pins 1,2  --->  Receive on Pins 1,2    
+Receive on Pins 3,6   <---  Transmit on Pins 3,6
+
+1,2 on Left <---> 1,2 on Right
+3,6 on Left <---> 1,2 on Right 
+
+
+-- Ethernet Crossover Cable --
+
+Transmit on Pins 3,6  --->  Receive on Pins 1,2    
+Receive on Pins 3,6   <---  Transmit on Pins 3,6
+
+3,6 on Left <---> 1,2 on Right
+1,2 on Left <---> 3,6 on Right 
