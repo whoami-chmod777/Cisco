@@ -1,0 +1,107 @@
+
+-- Intro to the CLI --
+
+#user EXEC mode
+Router> 
+
+#privileged EXEC mode
+Router# 
+
+#global configuration mode
+Router(config)# 
+
+#used to enter privileged EXEC mode
+Router>enable
+
+#used to enter global configuration mode
+Router#configure terminal
+Router#conf t
+
+
+#configures a password to protect privileged exec mode
+Router(config)#enable password password
+
+#encrypts the enable password (and other passwords)
+Router(config)#service password-encryption
+
+#configures a more secure, always-encrypted enable password
+Router(config)#enable secret password
+
+
+#executes a privileged-exec level command from global configuration mode
+Router(config)#do privileged-exec-level-command
+
+#removes the command
+Router(config)#no command
+
+
+#displays the current, active configurtion file
+Router#show running-config
+Router#sh run
+
+#saves the configuration
+Router#write
+
+#saves the configuration
+Router#write memory
+
+#saves the configuration
+Router#copy running-config startup-config
+
+
+
+--- Example --
+
+Router>en
+Router#conf t
+Router(config)#hostname R1
+R1(config)#enable password CCNA
+R1(config)#service password-encryption
+R1(config)#enable secret Cisco
+R1(config)#end
+R1#sh run
+R1#write
+!
+enable secret 5 $1$mERr$YlCkLMcTYWwkF1Ccndtll.
+enable password 7 08026F6028
+!
+
+R1>en
+Password: 
+R1#
+
+********************************************************
+
+Switch>
+Switch>en
+Switch#conf t
+Switch(config)#hostname SW1
+SW1(config)#enable password CCNA
+SW1(config)#service password-encryption 
+SW1(config)#enable secret Cisco
+SW1(config)#end
+SW1(config)#do sh run
+!
+enable secret 5 $1$mERr$YlCkLMcTYWwkF1Ccndtll.
+enable password 7 08026F6028
+!
+
+SW1>en
+Password: 
+SW1#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
