@@ -17,7 +17,6 @@ Router>enable
 Router#configure terminal
 Router#conf t
 
-
 #configures a password to protect privileged exec mode
 Router(config)#enable password password
 
@@ -27,13 +26,11 @@ Router(config)#service password-encryption
 #configures a more secure, always-encrypted enable password
 Router(config)#enable secret password
 
-
 #executes a privileged-exec level command from global configuration mode
 Router(config)#do privileged-exec-level-command
 
 #removes the command
 Router(config)#no command
-
 
 #displays the current, active configurtion file
 Router#show running-config
@@ -70,7 +67,7 @@ R1>en
 Password: 
 R1#
 
-********************************************************
+
 
 Switch>
 Switch>en
