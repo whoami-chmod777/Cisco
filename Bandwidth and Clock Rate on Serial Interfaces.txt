@@ -14,9 +14,9 @@ the cables.
 Router 1 DTE ------------------- Router 2 DCE (clock rate Command Goes Here)
 
 
-Router#conf t
-Router(config)#int s0/1/0
-Router(config-if)#clock rate 800000
+R1#conf t
+R1(config)#int s0/1/0
+R1(config-if)#clock rate 800000
 
 
 R1# show running-config
@@ -50,9 +50,9 @@ Encapsulation HDLC, loopback not set
 
 -- Command Summarization --
 
-Router#conf t
-Router(config)#int s0/1/0
-Router(config-if)#clock rate 800000
+R1#conf t
+R1(config)#int s0/1/0
+R1(config-if)#clock rate 800000
 
 R1# show running-config
 R1# show controllers serial 0/0/1
