@@ -1,0 +1,15 @@
+
+SW1#show arp
+
+SW1#show mac address-table 
+SW1#show mac address-table static 
+SW1#show mac address-table dynamic 
+
+SW1#clear mac address-table
+
+SW1#clear mac address-table dynamic 
+SW1#clear mac address-table dynamic address 00d0.d3ad.9cab
+SW1#clear mac address-table dynamic interface Fa0/1
+
+SW1(config)#mac address-table static aaaa.aaaa.aaaa fa0/1 vlan 1
+SW1(config)#no mac address-table static aaaa.aaaa.aaaa fa0/1 vlan 1
