@@ -20,11 +20,11 @@ Check encapsulation settings
 
 Step (3)
 Move cable to an unused/different port on the router/switch
-	- If problem persists continue troubleshooting
-	- If problem stops you have a bad NIC/Interface on your router/switch
+   - If problem persists continue troubleshooting
+   - If problem stops you have a bad NIC/Interface on your router/switch
 Swap cable for another one (possible bad cable)
 
 Step (4)
 Capture Sniffer Traces
-	- Are malformed frames typically coming from the same Source MAC?
+   - Are malformed frames typically coming from the same Source MAC?
 Check the lenght of the cable. Does it excees the maximum distance of 100 meters?
