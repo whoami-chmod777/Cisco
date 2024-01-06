@@ -1,0 +1,30 @@
+
+R1#sh interfaces gigabitEthernet 0/0
+
+R1#conf t
+R1(config)#interface gigabitEthernet 0/0
+R1(config-if)#load-interval 30
+
+R1#clear counters gigabitEthernet 0/0
+
+
+-- Steps  to Resolution --
+
+Step (1)
+Reduce the load-interval of problematic interfaces
+Clear interface counters and watch... is the problem still recurring?
+
+Step (2)
+Check speed and duplex settings
+Check encapsulation settings
+
+Step (3)
+Move cable to an unused/different port on the router/switch
+	- If problem persists continue troubleshooting
+	- If problem stops you have a bad NIC/Interface on your router/switch
+Swap cable for another one (possible bad cable)
+
+Step (4)
+Capture Sniffer Traces
+	- Are malformed frames typically coming from the same Source MAC?
+Check the lenght of the cable. Does it excees the maximum distance of 100 meters?
