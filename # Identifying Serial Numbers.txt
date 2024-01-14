@@ -1,0 +1,4 @@
+
+SW1#show diagnostic switch
+
+Router#show diag
