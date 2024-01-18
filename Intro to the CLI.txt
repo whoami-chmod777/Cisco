@@ -1,3 +1,15 @@
+-- IOS has a command hierarchy --
+
+Router> - User (or EXEC) mode
+Router# - Privileged EXEC (or Enable) mode
+
+Configuration modes
+Router(config)# - Global Configura0on Mode
+Router(config-if)# - Interface Configura0on Mode
+Router(config-router)# - Router Configura0on Mode
+
+Usage of Exit, End, Ctrl-Z
+
 
 -- Intro to the CLI --
 
