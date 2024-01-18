@@ -1,4 +1,12 @@
 
+-- VLANs Overview --
+
+· VLANs Access
+· VLANs Trunk
+· Router in a ROAS
+· Inter VLAN Routing (Multilayer Switching)
+
+
 --- VLAN Configuration 1 ---
 
 10.0.0.0 255.255.255.192 
@@ -193,9 +201,48 @@ R1(config-if)# ip address 192.168.1.1 255.255.255.0
 
 
 
--- Configure Multilayer Switching --
+-- Inter VLAN Routing (Multilayer Switching) --
+
+R1>en
+R1#conf t
+R1(config)#no interface gigabitEthernet 0/0.10
+R1(config)#no interface gigabitEthernet 0/0.20
+R1(config)#no interface gigabitEthernet 0/0.30
+R1(config)#int gigabitEthernet 0/0
+R1(config-if)#ip address 10.0.0.194 255.255.255.252
+R1(config-if)#no shutdown 
+R1(config-if)#end
+R1#wr mem
 
 
+SW2>en
+SW2#conf t
+SW2(config)#default interface gigabitEthernet 1/0/2
+SW2(config)#int gigabitEthernet 1/0/2
+SW2(config-if)#no switchport 
+SW2(config-if)#ip address 10.0.0.193 255.255.255.252
+SW2(config-if)#no shutdown 
+SW2(config-if)#end
+SW2#wr mem
+ 
+SW2#conf t
+SW2(config)#ip routing 
+SW2(config)#ip route 0.0.0.0 0.0.0.0 10.0.0.194
+SW2(config)#end
+SW2#wr 
+
+SW2#conf t
+SW2(config)#int vlan 10
+SW2(config-if)#ip address 10.0.0.62 255.255.255.192
+SW2(config-if)#int vlan 20
+SW2(config-if)#ip address 10.0.0.126 255.255.255.192
+SW2(config-if)#int vlan 30
+SW2(config-if)#ip address 10.0.0.190 255.255.255.192
+SW2(config-if)#end
+SW2#
+
+SW2#sh ip route 
+SW2#sh vlan brief
 
 
 
