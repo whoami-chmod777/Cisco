@@ -30,7 +30,7 @@ switch# copy system:running-config bootflash:my-config
 
 Router#terminal length 0
 Router#terminal length 10
-Router#show run brief
+Router#sh run brief
 Router#sh run 
 
 
