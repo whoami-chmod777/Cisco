@@ -1,4 +1,3 @@
-
 -- Erase the contents of NVRAM on Router --
 
 Router#write erase 
@@ -6,11 +5,16 @@ Router#erase startup-config
 Router#reload 
 
 
--- Erase the contents of NVRAM on Switch -- 
+-- Erase the contents of NVRAM on Switch - -
 
-Switch#write erase 
+Switch#write erase  
 Switch#delete flash: vlan.dat
+
 Switch#reload 
+
+Switch#erase startup
+Switch#delete flash:vlan.dat
+Switch#reload
 
 
 -- Saving Configuration Files --
@@ -20,19 +24,24 @@ Router#copy system:running-config
 Router#copy nvram:startup-config
 Router#dir flash:
 
-switch# copy nvram:startup-config tftp://172.16.10.100/my-config
-switch# copy system:running-config bootflash:my-config
+switch#copy nvram:startup-config tftp://172.16.10.100/my-config 
+switch#copy system:running-config bootflash:my-config
 
 
 -- Show the Complete Configuration without Breaks --
 
 Router#terminal length 0
 Router#terminal length 10
-Router#sh run brief
 Router#sh run 
+Router#sh run brief
 
 
 -- Configuration Replace --
 
-configure replace disk0:myconfig-1
-configure replace flash:clean-slate
+Router#configure replace disk0:myconfig-1
+Router#configure replace flash:clean-slate
+
+
+-- Read the contents of saved configuration file --
+
+Router#more flash:Test-Config
