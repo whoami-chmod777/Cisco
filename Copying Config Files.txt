@@ -1,7 +1,6 @@
 
 -- Erase the contents of NVRAM on Router --
 
-Router#write er
 Router#write erase 
 Router#erase startup-config 
 Router#reload 
@@ -11,7 +10,6 @@ Router#reload
 
 Switch#write erase 
 Switch#delete flash: vlan.dat
-Switch#erase startup-config
 Switch#reload 
 
 
