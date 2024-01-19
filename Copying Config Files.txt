@@ -17,7 +17,7 @@ Switch#reload
 
 -- Saving Configuration Files --
 
-Router#copy run flash: clean-slate
+Router#copy running-config flash: clean-slate 
 Router#copy system:running-config
 Router#copy nvram:startup-config
 Router#dir flash:
