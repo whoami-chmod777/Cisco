@@ -9,7 +9,6 @@ Router#reload
 
 Switch#write erase  
 Switch#delete flash: vlan.dat
-
 Switch#reload 
 
 Switch#erase startup
