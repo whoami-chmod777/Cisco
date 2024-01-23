@@ -1,0 +1,73 @@
+
+-- Initial Configuration Commands --
+
+Router(config-line)# logging synchronous
+Router(config)# no ip domain-lookup
+Router(config)# hostname Lab-1-Rtr
+Router(config)# banner motd
+
+Router(config-if)#ip address <address><mask>
+Router(config-if)# no shutdown
+
+
+-- Monitoring Interfaces --
+
+Router# show ip interface brief
+Router# show interface <type/number>
+Router# show interface <type/number> switchport
+Router# show interface trunk
+
+
+-- Monitoring Routing Protocols --
+
+Router# show ip route
+Router# show ip protocol
+Router# show ip <protocol> neighbor
+Router# show cdp neighbor
+Router# show cdp neighbor details
+Securing Cisco Devices
+
+
+-- Monitoring Memory and Images --
+
+Router# show version
+Router# dir all
+Router# show startup-config
+Router# show running-config
+
+
+-- Saving and Deleting Configurations --
+
+Router# copy running-config startup-config
+Router# write memory
+
+Step-1: Delete startup configura4on
+Router# erase startup-config
+Or…
+Router# write erase
+
+Step-2: Reload the router
+Router# reload
+
+
+-- Securing Device Access --
+
+Switch(config)# enable password <password>
+Switch(config)# no enable password
+
+Switch(config)# enable secret <password>
+Switch(config)# no enable secret
+
+Switch(config)# line console 0
+Switch(config-line)# password <password>
+
+
+-- Securing Cisco Devices --
+
+Switch(config)# line vty 0 4
+Switch(config-line)# password <password> 
+Switch(config-line)# login
+
+Switch(config)# username <username> privilege 15 password <password>
+Switch(config-line)# login local
+
