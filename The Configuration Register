@@ -1,0 +1,29 @@
+
+-- The Configuration Register --
+
+· 16-Bits located within NVRAM
+· Controls bootup characteristics of the device (Router or Switch):
+  - Console baud rate
+  - To load (or not load) Startup-Config file
+  - Where to look for IOS image
+  - Disable boot messages
+
+
+Router#config terminal
+Enter configuration commands, one per line. End with CNTL/Z.
+Router(config)#config-register 0x2142
+Router(config)#
+
+Or…
+
+ROMMON>confreg 0x2102
+
+
+Router#show version
+
+-------------------------------------------------
+Device# PID SN
+-------------------------------------------------
+*0 CISCO2811 FTX1214A3DM
+
+Configura1on register is 0x8102 (will be 0x2102 at next reload)
