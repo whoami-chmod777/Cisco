@@ -1,1 +1,103 @@
 
+-- Upgrade Procedure for Cisco IOS --
+
+· TFTP
+· FTP
+· TFTPDNLD (ROMMON Mode)
+· Disaster Recovery Over Console Port (XMODEM)
+
+
+-- TFTP--
+
+ping 192.168.1.200
+
+R1>en
+R1#show version
+
+R1# dir flash:
+R1# show flash: | include .bin
+
+R1#copy tftp: flash:
+Address or name of remote host []? 192.168.1.200
+Source filename []? c2800nm-adventerprisek9-mz.151-4.M12a.bin
+
+R1# conf t
+R1(config)#boot system flash:c2800nm-adventerprisek9-mz.151-4.M12a.bin
+R1(config)#end
+R1#wr
+
+R1#copy tftp://192.168.1.200/c2800nm-adventerprisek9-mz.151-4.M12a.bin flash:
+
+
+
+-- FTP --
+
+R1(config)#ip ftp username admin
+R1(config)#ip ftp password cisco
+
+R1#copy ftp://admin:cisco@192.168.1.201/c2800nm-adventerprisek9-mz.151-4.M12a.bin flash:
+
+
+
+-- TFTPDNLD (ROMMON Mode) --
+
+"Break Signal"
+
+rommon 2 > tftpdnld 
+rommon 3 > set
+rommon 4 > IP_ADDRESS=192.168.1.5 
+rommon 5 > IP_SUBNET_MASK=255.255.255.0 
+rommon 6 > DEFAULT_GATEWAY=192.168.1.1 
+rommon 7 > TFTP_SERVER=192.168.1.10 
+rommon 8 > TFTP_FILE=c1841-advipservicesk9-mz.124-13a.bin 
+rommon 9 > tftpdnld -r 
+ 
+IP_ADDRESS: 192.168.1.5
+IP_SUBNET_MASK: 255.255.255.0
+DEFAULT_GATEWAY: 192.168.1.1
+TFTP_SERVER: 192.168.1.10
+TFTP_FILE: c1841-advipservicesk9-mz.124-13a.bin
+TFTP_MACADDR: 00:13:80:7b:20:1e
+TFTP_VERBOSE: Progress
+TFTP_RETRY_COUNT: 18
+TFTP_TIMEOUT: 7200
+TFTP_CHECKSUM: Yes
+FE_PORT: 0
+FE_SPEED_MODE: Auto Detect
+
+
+
+-- Disaster Recovery Over Console Port (XMODEM) --
+
+Baud Rate 115200
+
+1600#configure terminal
+1600(config)#config-register 0x3922
+rommon 1 > confreg 0x3922
+1600(config)#^Z
+1600#reload
+
+Change setting in Putty
+
+rommon 1 >
+rommon 1 > xmodem -r c1841-advipservicesk9-mz.124-13a.bin
+
+Send the File --> the transfer is beginning
+
+
+xmodem [-c] [-y] [-e] [-f] [-r] [-x] [-s data-rate]
+
+-c 	(Optional) CRC-16 checksumming, which is more sophisticated and thorough than standard checksumming.
+-y 	(Optional) Uses the Ymodem protocol for higher throughput.
+-e 	(Optional) Erases the first partition in Flash memory before the download starts. This option is only valid for the Cisco 1600 series.
+-f 	(Optional) Erases all Flash memory before the download starts. This option is only valid for the Cisco 1600 series routers.
+-r 	(Optional) Downloads the file to DRAM. The default is Flash memory.
+-x 	(Optional) Does not execute the Cisco IOS software image on completion of the download.
+
+-sdata-rate 	
+(Optional) Sets the console port data rate during file transfer. Values are 1200, 2400, 4800, 9600, 19200, 38400, and 115200 bps. The default rate is specified in the configuration register. This option is only valid for the Cisco 1600 series routers.
+
+
+
+-filename 	
+(Optional) Filename to copy. This argument is ignored when the -r keyword is specified since only one file can be copied to DRAM. On the Cisco 1600 series routers, files are loaded to the ROMmon for execution.
