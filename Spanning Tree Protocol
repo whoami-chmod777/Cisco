@@ -1,0 +1,123 @@
+
+The Ethernet header doesn’t have a TTL field. These broadcast frames will loop  around the network indefinitely. If enough of these looped broadcasts accumulate in the network, the network will be too congested for legitimate traffic to use the network. This is called a `broadcast storm`.
+
+Network congestion isn’t the only problem. Each time a frame arrives on a switchport, the switch uses the source MAC address field to ‘learn’ the MAC address and update its MAC address table. When frames with the same source MAC address repeatedly arrive on different interfaces, the switch is continuously updating the interface in its MAC address table. This is known as 'MAC
+Address Flapping'.
+
+
+-- STP Port States --
+
+Disabled - The result of an administrative command that will disable the port
+Blocking - When a device is connected, the port will first enter the blocking state
+Listening - The switch will listen for and send BPDUs
+Learning - The switch will receive a superior BPDU, will stop sending its own BPDUs, and will relay the superior BPDUs
+Forwarding - The port is forwarding traffic
+
+
+-- STP Port Roles --
+
+Root - Ports on non-root switches with the best cost path to root bridge. These ports forward data to the root bridge
+Designated - Ports on root and designated switches. All ports on the root bridge will be designated
+Blocked - All other ports to bridges or switches are in a blocked state. Access ports going to workstations or PCs are not affected
+
+
+-- Root Bridge Election Process --
+
+Switches use one field in the STP BPDU, the 'Bridge ID' field, to elect a root bridge for the network.
+
+The switch with the 'lowest Bridge ID' becomes the 'root bridge'
+
+ALL ports on the 'root bridge' are put in a 'forwarding state' and other switches in the topology must have a path to reach the root bridge. All interfaces on the 'root bridge' are 'designated ports'. Designated ports are in a forwarding state
+
+The 'default bridge priority' is '32768' on all switches, so by default the 'MAC address' is used as the tie-breaker (lowest MAC address becomes the root bridge).
+
+The STP bridge priority can only be changed in units of 4096. The valid values you can configure are: 0, 4096, 8192, 12288, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, or 61440. The Extended System ID will then be added to this number to make the total bridge priority.
+
+
+-- STP Root Port Election Tutorial --
+
+Spanning Tree Root Port election process (notice that it is Root Port election, 'not Root Bridge' election process) in a Non-Root Switch includes the following steps:
+
+1. Lowest accumulated cost on interfaces towards Root Bridge
+2. Lowest Sender Bridge ID
+3. Lowest Sender Port ID (= Port Priority + Port Number) (so port priority is compared first then to Port number)
+
+
+'Root Port' election is based on the port having 'lowest accumulated cost' to the 'Root Bridge' SW1 (step 1 above). Here is how to calculate the path cost: SW1 (root bridge) sends BPDU with cost of 0 to other directly connected switches. When a switch receives this BPDU, it adds its own port cost to this value. For example, SW2 has two ways to reach SW1:
+
++ SW2 – SW1: path cost is 0 + 4 = 4
++ SW2 – SW4 – SW3 – SW1: path cost is 0 + 4 + 4 + 19 = 27
+
+Note: The path cost ios calculated as follows:
+
+10 Mbps = 100
+100 Mbps = 19
+1 Gbps = 4
+10 Gbps = 2
+
+Therefore SW2 will choose the first path so the port that is directly connected to SW1 on SW2 will become root port. Same on SW3, the port that is directly connected to SW1 will be chosen root port.
+
+On SW4, there are two ways to reach SW1:
+
+SW4 – SW2 – SW1: path cost is 0 + 4 + 19 = 23
+SW4 – SW3 – SW1: path cost is 0 + 4 + 4 = 8
+
+
+-- Spanning Tree Protocol Process --
+
+The switch with the lowest bridge ID is elected as the root bridge. All ports on the root bridge are designated ports (forwarding state).
+Each remaining switch will select ONE of its interfaces to be its 'root port'. The interface with the lowest root cost will be the root port. Root ports are also in a forwarding state.
+
+
+
+
+-- Spanning Tree Protocol Commands --
+
+SW1#show spanning-tree
+SW1#show spanning-tree brief
+SW1#show spanning-tree detail
+SW1#show spanning-tree summary
+SW1#show spanning-tree vlan 1
+
+
+SW1#conf t
+SW1(config)#spanning-tree vlan 1 root primary 
+SW1(config)#spanning-tree vlan 2 root secondary 
+SW1(config)#end
+
+SW2>en
+SW2#conf t
+SW2(config)#spanning-tree vlan 1 root secondary 
+SW2(config)#spanning-tree vlan 2 root primary 
+SW2(config)#
+
+SW4#
+SW4#conf t
+SW4(config)#int f0/2
+SW4(config-if)#spanning-tree vlan 1 cost 100
+SW4(config-if)#exit
+
+SW4(config)#int f0/3
+SW4(config-if)#spanning-tree portfast 
+SW4(config-if)#spanning-tree bpduguard enable 
+SW4(config-if)#end
+SW4#
+
+SW3(config)#spanning-tree priority 1
+SW3(config)#spanning-tree vlan 1 priority 4096
+
+
+% Allowed values are:
+  0     4096  8192  12288 16384 20480 24576 28672
+  32768 36864 40960 45056 49152 53248 57344 61440
+
+
+
+
+
+
+
+
+
+
+
