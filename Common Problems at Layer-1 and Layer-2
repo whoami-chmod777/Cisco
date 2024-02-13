@@ -1,0 +1,88 @@
+
+• Is the problem reported by only a single person, or a group of people
+
+If a single person is the problem
+
+• Only affecting a single destination or application
+• Affecting all network access by that person
+
+
+-- If the issue affects all network connectivity on a single device --
+
+-- Physical Layer-1 on Device --
+
+Identify and correct problems at Layer-1 on the Host device
+
+• Is the host device powered-on
+• Is your laptop plugged into the network cable
+• Ensure Cable/DSL modem is powered-on and connected
+
+Wireless (Wi-Fi)
+
+• Is the Wi-Fi Radio switch turned on in your Laptop/Device
+• Disabled NIC in Software
+• Wrong Cable Type
+
+
+-- Data Link Layer on Device --
+
+• Wired Ethernet Duplex Issues
+• WiFi SSID Incorrect
+
+
+-- Physical Layer-1 on Switch --
+
+• Is the Switch/Router powered-on 
+• Is the Ethernet cable pushed in all the way (Broken clips) 
+• Wrong Cable Type 
+• Misaligned Network Modules
+• Interfaces Administratively Disabled
+• Interfaces Err-disabled
+• Incorrectly-cabled Fiber
+• Mismatched Ethernet Speed
+
+
+-- Data Link Layer on Switch --
+
+• PPPoE Authentication Errors
+• Correct Encapsulation (Serial Interfaces)
+• Router-On-A-Stick
+
+
+- Router-On-A-Stick -
+
+» When trunking from a Switch to a Router, subinterfaces are used 
+» Each VLAN carried on the Trunk must have an associated subinterface
+» A missing sub-interface would cause a Layer-2 issue
+» Verifica>on Step-1: Iden>fy VLANs carried on VLAN Trunk link
+» Verifica>on Step-2: Confirm each VLAN has associated sub-interface on router
+
+
+-- Basic IOS Troubleshooting --
+
+- Layer 1 -
+
+show ip interface brief (Routers and Switches)
+show interfaces fastEthernet 0/14
+
+show logging | i err-disable
+show logging | i fastEthernet 0/14
+
+show interface status (Switches) 
+show run interface <type/module>
+
+show running-config
+
+
+- Layer 2 -
+
+show interfaces Virtual-Access 1
+debug ppoe error
+show running-config
+show ip interface brief
+show interface s0/0/0
+
+
+- Router-On-A-Stick -
+
+show interfaces trunk
