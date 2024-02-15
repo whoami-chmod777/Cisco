@@ -1,0 +1,31 @@
+
+-- Out-of-Band Settings --
+
+• 9600 baud
+• 8 data bits
+• No parity
+• 1 stop bit
+
+
+-- Terminal Emulators & Text Editors --
+
+Router>en
+Router#terminal length 0
+
+
+-- router_config.txt --
+
+enable
+conf t
+!
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname Router01
+!
+!
+!
+!
+!
+......
