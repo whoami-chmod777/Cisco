@@ -1,0 +1,140 @@
+
+-- EtherChannel --
+
+LACP - active / passive
+PAgP - desirable / auto
+Static - on
+
+
+-- EtherChannel --
+
+# Configures the EtherChannel load-balancing method on the switch
+SW(config)> port-channel load-balance mode
+
+# Displays information about the load-balancing settings
+SW> show etherchannel load-balance
+
+# Configures an interface to be part of an EtherChannel
+SW(config-if)> channel-group number mode {desirable|auto|active|passive|on}
+
+# Displays a summary of EtherChannels on the switch
+SW> show etherchannel summary
+
+# Displays information about the virtual port-channel interfaces on the switch
+SW> show etherchannel
+SW> show etherchannel port-channel
+
+# Check EtherChannel Configuration
+ASW1> show run
+ASW1> sh interfaces trunk 
+ASW1> show etherchannel summary 
+ASW1> sh etherchannel port-channel
+ASW1> show spanning-tree
+
+
+
+-- EtherChannel Configuration Examples --
+
+· Configure Layer 2 EtherChannel using LACP (Configure as a Trunk)
+· Configure Layer 2 EtherChannel using PAgP (Configure as a Trunk)
+· Configure Layer 3 EtherChannel using static EtherChannel
+· Configure the Load-Balance based on Source and Destination IP addresses
+· Configure Static Routing
+
+
+-- Configure Layer 2 EtherChannel using LACP (Configure as a Trunk) --
+
+ASW1>en
+ASW1#conf t
+ASW1(config)#interface range gigabitEthernet 0/1-2
+ASW1(config-if-range)#channel-group 1 mode active 
+ASW1(config-if-range)#
+ASW1(config-if-range)#int po1
+AASW1(config-if)#switchport mode trunk 
+AASW1(config-if)#end
+ASW1# copy running-config startup-config 
+
+DSW1>en
+DSW1#conf t
+DSW1(config)#interface range gigabitEthernet 1/0/3-4
+DSW1(config-if-range)#channel-group 1 mode active 
+DSW1(config-if-range)#int po1
+DSW1(config-if)#switchport trunk encapsulation dot1q
+DSW1(config-if)#switchport mode trunk 
+DSW1(config-if)#end
+DSW1#wr
+
+
+
+-- Configure Layer 2 EtherChannel using PAgP (Configure as a Trunk) --
+
+ASW2>en
+ASW2#conf t
+ASW2(config)#interface range gigabitEthernet 0/1-2
+ASW2(config-if-range)#channel-group 1 mode desirable 
+ASW2(config-if-range)#int po1
+ASW2(config-if)#switchport mode trunk 
+ASW2(config-if)#end
+ASW2#wr
+
+DSW2>en
+DSW2#conf t
+DSW2(config)#interface range gigabitEthernet 1/0/3-4
+DSW2(config-if-range)#channel-group 1 mode desirable
+DSW2(config-if-range)#int po1
+DSW2(config-if)#switchport trunk encapsulation dot1q
+DSW2(config-if)#switchport mode trunk 
+DSW2(config-if)#end
+DSW2#wr
+
+
+
+-- Configure Layer 3 EtherChannel using static EtherChannel --
+
+DSW1>en
+DSW1#conf t
+DSW1(config)#interface range gigabitEthernet 1/0/1-2
+DSW1(config-if-range)#no switchport 
+DSW1(config-if-range)#channel-group 2 mode on
+DSW1(config-if-range)#ip address 10.0.0.1 255.255.255.252
+DSW1(config-if-range)#end
+DSW1#wr 
+
+DSW2#
+DSW2#conf t
+DSW2(config)#interface range gigabitEthernet 1/0/1-2
+DSW2(config-if-range)#no switchport 
+DSW2(config-if-range)#channel-group 2 mode on
+DSW2(config-if-range)#int po2
+DSW2(config-if)#ip address 10.0.0.2 255.255.255.252
+DSW2(config-if)#end
+DSW2#wr
+
+
+
+-- Configure Static Routing --
+
+DSW1#sh ip route
+DSW1#conf t
+DSW1(config)#ip route 172.16.2.0 255.255.255.0 10.0.0.2
+DSW1(config)#do sh ip route
+
+DSW2#sh ip route
+DSW2#conf t
+DSW2(config)#ip route 172.16.1.0 255.255.255.0 10.0.0.1
+DSW2(config)#do sh ip route
+
+
+
+-- Configure the Load-Balance based on Source and Destination IP addresses --
+
+On each existing Switch
+
+ASW1#show etherchannel load-balance 
+
+ASW1#configure t
+ASW1(config)#port-channel load-balance src-dst-ip
+ASW1(config)#end
+ASW1#wr
+
+ASW1#sh etherchannel load-balance
