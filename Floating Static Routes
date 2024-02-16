@@ -1,0 +1,76 @@
+
+-- Configure Floating Static Routes --
+
+
+R1#sh ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is 203.0.113.9 to network 0.0.0.0
+
+     10.0.0.0/8 is variably subnetted, 5 subnets, 3 masks
+C       10.0.0.0/30 is directly connected, GigabitEthernet0/2/0
+L       10.0.0.1/32 is directly connected, GigabitEthernet0/2/0
+C       10.0.1.0/24 is directly connected, GigabitEthernet0/1
+L       10.0.1.254/32 is directly connected, GigabitEthernet0/1
+O       10.0.2.0/24 [110/2] via 10.0.0.2, 00:21:26, GigabitEthernet0/2/0
+     203.0.113.0/24 is variably subnetted, 4 subnets, 2 masks
+C       203.0.113.0/30 is directly connected, GigabitEthernet0/0/0
+L       203.0.113.2/32 is directly connected, GigabitEthernet0/0/0
+C       203.0.113.8/30 is directly connected, GigabitEthernet0/1/0
+L       203.0.113.10/32 is directly connected, GigabitEthernet0/1/0
+S*   0.0.0.0/0 [1/0] via 203.0.113.9
+
+
+R1>en
+R1#conf t
+R1(config)#ip route 10.0.2.0 255.255.255.0 203.0.113.1 ?
+  <1-255>  Distance metric for this route
+  <cr>
+R1(config)#ip route 10.0.2.0 255.255.255.0 203.0.113.1 111
+R1(config)#end
+R1#
+
+The <1-255>  Distance metric for this route means the Administrative Distance
+
+
+
+R2>
+R2>en
+R2#sh ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is 203.0.113.13 to network 0.0.0.0
+
+     10.0.0.0/8 is variably subnetted, 5 subnets, 3 masks
+C       10.0.0.0/30 is directly connected, GigabitEthernet0/2/0
+L       10.0.0.2/32 is directly connected, GigabitEthernet0/2/0
+O       10.0.1.0/24 [110/2] via 10.0.0.1, 00:41:03, GigabitEthernet0/2/0
+C       10.0.2.0/24 is directly connected, GigabitEthernet0/1
+L       10.0.2.254/32 is directly connected, GigabitEthernet0/1
+     203.0.113.0/24 is variably subnetted, 4 subnets, 2 masks
+C       203.0.113.4/30 is directly connected, GigabitEthernet0/0/0
+L       203.0.113.6/32 is directly connected, GigabitEthernet0/0/0
+C       203.0.113.12/30 is directly connected, GigabitEthernet0/1/0
+L       203.0.113.14/32 is directly connected, GigabitEthernet0/1/0
+S*   0.0.0.0/0 [1/0] via 203.0.113.13
+
+R2#conf t
+R2(config)#ip route 10.0.1.0 255.255.255.0 203.0.113.5 ?
+  <1-255>  Distance metric for this route
+  <cr>
+R2(config)#ip route 10.0.1.0 255.255.255.0 203.0.113.5 111
+R2#
+
+The <1-255>  Distance metric for this route means the Administrative Distance
