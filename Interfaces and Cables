@@ -7,6 +7,7 @@ Cisco switches have a feature called auto-mdix that notices when the wrong cable
 Similar devices require crossover cables
 · Switch to Switch connections require crossover cables
 · Router to Router connections require crossover cables
+· Laptop to Router connections require crossover cables
 
 Dissimilar devices require  straight-thru cables
 · Switch to Router connections require straight-thru cables
