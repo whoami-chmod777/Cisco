@@ -1,0 +1,46 @@
+
+-- Check the Switch --
+
+Switch#show interfaces fastEthernet 0/1
+Switch#show interfaces status
+Switch#show ip interface brief
+
+Switch#conf t
+Switch#conf terminal 
+Switch(config)#interface fastEthernet 0/1
+Switch(config-if)#no shutdown 
+Switch(config-if)#end
+
+Switch#show run interfaces fastEthernet 0/1
+Switch#show run interfaces fastEthernet 0/1 switchport
+Switch#show interfaces fastEthernet 0/1
+Switch#show interfaces fastEthernet 0/1 switchport
+
+Switch#show vlan
+Switch#sh vlan brief
+
+
+-- Configure VLAN --
+
+Switch>en
+Switch#conf t
+Switch(config)#vlan 7
+Switch(config-vlan)#exit
+Switch(config)#int fastEthernet 0/1
+Switch(config-if)#switchport mode access 
+Switch(config-if)#switchport access vlan 7
+Switch(config-if)#end
+Switch#
+
+
+Check the Cable
+Check the Laptop's NIC Card
+Check the Laptop's Network Adapter Settings
+
+
+C:\Users\miro>ipconfig
+C:\Users\miro>ipconfig /all
+
+C:\Users\miro>ping 127.0.0.1
+C:\Users\miro>ping 192.168.199.1
+C:\Users\miro>ping 1.1.1.1
