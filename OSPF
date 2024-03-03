@@ -1,0 +1,287 @@
+
+The OSPF (Open Shortest Path First) protocol is one of a family of IP Routing protocols, and is an Interior Gateway Protocol (IGP) for the Internet, used **to distribute IP routing information throughout a single Autonomous System (AS) in an IP network**
+
+
+OSPF Overview
+
+· OSPF (Part 1)
+· OSPF (Part 2)
+· OSPF (Part 3)
+
+
+--- OSPF (Part 1) ---
+
+Configure the appropriate hostnames and IP addresses on each device
+Configure a loopback interface on each router (1.1.1.1/32 for R1, 2.2.2.2/32 for R2, etc.)
+Configure OSPF on each router
+
+
+# Configure the appropriate hostnames and IP addresses on each device
+
+ISPR1>
+ISPR1>en
+ISPR1#conf t
+ISPR1(config)#hostname ISPR1
+ISPR1(config)#int g0/0/0
+ISPR1(config-if)#ip address 203.0.113.2 255.255.255.252
+ISPR1(config-if)#no shutdown 
+ISPR1(config-if)#end
+ISPR1#wr
+
+Router>en
+Router#conf t
+Router(config)#hostname R1
+R1(config)#interface g3/0
+R1(config-if)#ip address 203.0.113.1 255.255.255.252
+R1(config-if)#no shutdown 
+R1(config-if)#int g0/0
+R1(config-if)#ip address 10.0.12.1 255.255.255.252
+R1(config-if)#no shutdown 
+R1(config-if)#int f1/0
+R1(config-if)#ip address 10.0.13.1 255.255.255.252
+R1(config-if)#no shutdown 
+R1(config-if)#end
+R1#
+
+Router>en
+Router#conf t
+Router(config)#hostname R2
+R2(config)#int g0/0
+RR2(config-if)#ip address 10.0.12.2 255.255.255.252
+R2(config-if)#no shutdown 
+R2(config-if)#int f1/0
+R2(config-if)#ip address 10.0.24.1 255.255.255.252
+R2(config-if)#no shutdown 
+R2(config-if)#end
+R2#
+
+Router>en
+Router#conf t
+Router(config)#hostname R3
+R3(config)#int f1/0
+R3(config-if)#ip address 10.0.13.2 255.255.255.252
+R3(config-if)#no shutdown 
+R3(config-if)#int f2/0
+R3(config-if)#ip address 10.0.34.1 255.255.255.252
+R3(config-if)#no shutdown 
+R3(config-if)#end
+R3#wr
+
+R3#sh ip int brief
+
+ 
+Router>en
+Router#conf t
+Router(config)#hostname R4
+R4(config)#int f2/0
+R4(config-if)#ip address 10.0.34.2 255.255.255.252
+R4(config-if)#no shutdown 
+R4(config-if)#int g0/0
+R4(config-if)#ip address 192.168.4.254 255.255.255.0
+R4(config-if)#no shutdown 
+R4(config-if)#int f1/0
+R4(config-if)#ip address 10.0.24.2 255.255.255.252
+R4(config-if)#no shutdown 
+R4(config-if)#end
+R4#wr
+
+R4#sh ip int brief 
+
+
+Switch>en
+Switch#conf t
+Switch(config)#hostname SW1
+SW1(config)#end
+SW1#
+
+
+
+-- Configure a loopback interface on each router (1.1.1.1/32 for R1, 2.2.2.2/32 for R2, etc.) --
+
+R1>
+R1>en
+R1#conf t
+R1(config)#interface loopback 0
+R1(config-if)#ip address 1.1.1.1 255.255.255.255
+R1(config-if)#end
+R1#
+
+R2>en
+R2#conf t
+R2(config)#interface loopback 0
+R2(config-if)#ip address 2.2.2.2 255.255.255.255
+R2(config-if)#end
+R2#wr mem
+
+R3>en
+R3#conf t
+R3(config)#no ip domain-lookup 
+R3(config)#interface loopback 0
+R3(config-if)#
+R3(config-if)#ip address 3.3.3.3 255.255.255.255
+R3(config-if)#no shutdown 
+R3(config-if)#end
+R3#wr mem
+R3#
+
+R4>en
+R4#conf t
+R4(config)#no ip domain-lookup 
+R4(config)#interface loopback 0
+R4(config-if)#ip address 4.4.4.4 255.255.255.255
+R4(config-if)#no shutdown 
+R4(config-if)#end
+R4#
+R4#copy running-config startup-config 
+
+R4#show  ip int br
+
+
+
+-- Configure OSPF on each router --
+
+Enable OSPF on each interface (including loopback interfaces).
+Configure passive interfaces where appropriate (including loopback interfaces).
+(Do not enable OSPF on R1's Internet link)
+
+R1>en
+R1#conf t
+R1(config)#router ospf 1
+R1(config-router)#network 10.0.12.0 0.0.0.0 area 0
+R1(config-router)#network 10.0.13.0 0.0.0.0 area 0
+R1(config-router)#network 1.1.1.1 0.0.0.0 area 0
+R1(config-router)#passive-interface loopback 0
+R1(config-router)#default-information originate 
+R1(config-router)#exit
+R1(config)#ip route 0.0.0.0 0.0.0.0 203.0.113.2
+R1(config)#end
+R1#
+
+R2>en
+R2#conf t
+R2(config)#router ospf 2
+R2(config-router)#network 10.0.0.0 0.0.255.255 area 0
+R2(config-router)#network 2.2.2.2 0.0.0.0 area 0
+R2(config-router)#end
+R2#wr mem
+R2#
+
+R3>
+R3>en
+R3#conf t
+R3(config)#router ospf 3
+R3(config-router)#network 10.0.13.2 0.0.0.0 area 0
+R3(config-router)#network 10.0.34.1 0.0.0.0 area 0
+R2(config-router)#passive-interface loopback 0
+R3(config-router)#network 3.3.3.3 0.0.0.0 area 0
+R3(config-router)#passive-interface loopback 0
+R3(config-router)#end
+R3#wr mem
+
+R4#conf t
+R4(config)#router ospf 4
+R4(config-router)#network 0.0.0.0 255.255.255.255 area 0
+R4(config-router)#passive-interface g0/0
+R4(config-router)#passive-interface loopback 0
+R4(config-router)#end
+R4#wr
+R4#
+
+R4#sh ip int brief 
+R4#show interfaces loopback 0
+
+R1#sh ip protocols 
+R1#show ip ospf database 
+R1#show ip ospf interface 
+R1#show ip route
+
+
+
+-- OSPF (Part 2) --
+
+-- OSPF Cost --
+
+R3(config)#router ospf 1
+R3(config-router)#auto-cost reference-bandwidth ?
+  <1-4294967>  The reference bandwidth in terms of Mbits per second
+R3(config-router)#auto-cost reference-bandwidth 4294967
+R3(config-router)#
+
+R3(config)#interface gigabitEthernet 0/0
+R3(config-if)#ip ospf cost ?
+  <1-65535>  Cost
+R3(config-if)#ip ospf cost 10000
+R3(config-if)#
+
+R3(config)#interface gigabitEthernet 0/0
+R3(config-if)#bandwidth ?
+  <1-10000000>  Bandwidth in kilobits
+R3(config-if)#bandwidth 10000000
+R3(config-if)#
+
+
+-- OSPF Neighbors --
+
+R3#sh ip ospf neighbor
+R3#show ip ospf database
+R3#show ip ospf interface
+R3#show ip ospf interface g0/0
+
+
+-- Set the Default Route --
+
+R3(config)#ip route 0.0.0.0 0.0.0.0 s0/0/0
+R3(config)#router ospf 1
+R3(config-router)#default-information originate
+
+
+-- OSPF Configuration Check --
+
+R3#show ip protocols
+R3#show ip route
+
+R3#show ip ospf
+R3#show ip ospf interface
+R3#show ip ospf interface g0/0
+
+R3#sh ip ospf neighbor
+R3#sh ip ospf neighbor detail
+R3#show ip ospf database
+
+
+-- OSPF Troubleshooting --
+
+R3#clear ip route *
+R3#clear ip route  0.0.0.0 0.0.0.0 
+
+R3#clear ip ospf counters
+R3#clear ip ospf process
+
+R3#debug ip ospf events 
+R3#debug ip ospf adj 
+R3#debug ip ospf packets
+
+
+--- OSPF Configuration --
+
+R3#
+R3#conf t
+R3(config)#int g0/0
+R3(config-if)#ip ospf 1 area 0
+R3(config-if)#int g0/1
+R3(config-if)#ip ospf 1 area 0
+R3(config-if)#int g0/2
+R3(config-if)#ip ospf 1 area 0
+R3(config-if)#int loopback0
+R3(config-if)#ip ospf 1 area 0
+R3(config-if)#exit 
+R3(config)#router ospf 1
+R3(config-router)#passive-interface default 
+R3(config-router)#no passive-interface g0/1
+R3(config-router)#no passive-interface g0/2
+R3(config-router)#end
+R3#
+
+
+
+-- OSPF (Part 3) --
