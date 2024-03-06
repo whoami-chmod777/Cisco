@@ -285,3 +285,117 @@ R3#
 
 
 -- OSPF (Part 3) --
+
+1. The connection between R1 and R2 has been newly added. 
+
+- Configure the serial connection between R1 and R2 (clock rate of 128000).
+- Configure OSPF on R1 and R2.
+
+2. Only R3 has a route to 10.0.2.0/24.  Why?  Fix the problem 
+3. R2 and R4 won't become OSPF neighbors with R5.  Why?  Fix the problem. 
+4. PC1 and PC2 can't ping the external server 8.8.8.8.  Why?  Fix the problem. 
+5. Examine the LSDB.  What LSAs are present?
+
+
+-- R1 --
+ 
+R1#show ip int brief 
+R1#show ip ospf interface 
+R1#show ip ospf interface serial 0/0/0
+
+R1#show ip protocols 
+R1#show ip route 
+R1#show controllers s0/0/0
+
+R1#conf t
+R1(config)#int serial 0/0/0
+R1(config-if)#ip address 192.168.12.1 255.255.255.252
+R1(config-if)#do show controllers s0/0/0
+R1(config-if)#clock rate 128000
+R1(config-if)#no shutdown 
+R1(config-if)#end
+R1#
+
+R1#conf t
+R1(config)#int serial 0/0/0
+R1(config-if)#ip ospf 1 area 0
+R1(config-if)#ip ospf 1 area 0
+R1(config-if)#end
+R1#
+
+
+-- R2 --
+
+R2#sh ip int brief 
+R2#sh controllers serial 0/0/0
+
+R2#conf t
+R2(config)#int serial 0/0/0
+R2(config-if)#ip address 192.168.12.2 255.255.255.252
+R2(config-if)#no shutdown 
+R2(config-if)#ip ospf 1 area 0
+R2(config-if)#end
+R2#
+
+
+-- R3 --
+
+R3#show ip ospf int g0/1
+
+R3#conf t
+R3(config)#int g0/1
+R3(config-if)#no ip ospf network point-to-point
+R3(config-if)#end
+R3#
+
+
+-- R4 --
+
+R4#show ip route
+R4#sh ip ospf interface g0/0
+
+R4#sh ip ospf neighbor 
+
+
+-- R5 --
+
+R5>en
+R5#conf t
+R5(config)#int gigabitEthernet 0/0
+R5(config-if)#no ip ospf hello-interval 
+R5(config-if)#no ip ospf dead-interval 
+R5(config-if)#end
+R5#
+
+R5>en
+R5#conf t
+R5(config)#int gigabitEthernet 0/0
+R5(config-if)#no ip ospf hello-interval 
+R5(config-if)#no ip ospf dead-interval 
+R5(config-if)#end
+R5#
+
+R5#conf t
+R5(config)#ip route 0.0.0.0 0.0.0.0 203.0.113.2
+R5(config)#end
+R5#
+
+
+R5#show running-config | section oscp
+R5#show ip ospf neighbor 
+R5#show ip ospf database 
+R5#show ip ospf interface
+
+
+
+
+
+
+
+
+
+
+
+
+
+
