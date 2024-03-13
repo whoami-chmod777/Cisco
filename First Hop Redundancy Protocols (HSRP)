@@ -1,0 +1,57 @@
+
+-- Basic HSRP Configuration --
+
+R1(config-if)# standby version 2
+R1(config-if)# standby <group-number> ip virtual-ip
+R1(config-if)# standby <group-number> priority priority
+R1(config-if)# standby <group-number> preempt
+
+
+
+-- First Hop Redundancy Protocols (HSRP) --
+
+1. Ping external server 8.8.8.8 from PC1/PC2
+
+2. Configure HSRPv2 on R1/R2. Raise R1's priority above the default, lower R2's priority below the default. Enable preemption 
+
+3. Configure the VIP as the default gateway of PC1/PC2 
+ 
+4. Turn off R1 (save the config first!). Is R2 used as the default gateway?
+
+5. Turn on R1 again. Does it become the active router again?
+
+
+C:\>ping 8.8.8.8
+C:\>ipconfig /all
+C:\>tracert 8.8.8.8
+C:\>arp -a
+
+
+R1>
+R1>en
+R1#conf t
+R1(config)#int g0/0
+R1(config-if)#standby version 2
+R1(config-if)#standby 1 ip 10.0.1.254
+R1(config-if)#standby 1 priority 200
+R1(config-if)#standby 1 preempt 
+R1(config-if)#end
+R1#wr mem
+
+
+R2>
+R2>en
+R2#conf t
+R2(config)#int g0/0
+R2(config-if)#standby version 2
+R2(config-if)#standby 1 ip 10.0.1.254
+R2(config-if)#standby 1 priority 50
+R2(config-if)#end
+R2#wr mem
+
+
+R1#show standby
+R1#show standby brief 
+R1#show standby GigabitEthernet0/0
+
+
