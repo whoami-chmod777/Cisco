@@ -1,0 +1,59 @@
+
+--- IPv6 (Part 1) ---
+
+-- IPv4/IPv6 'Dual-Stack' Configuration --
+
+1. Enable IPv6 routing on R1
+2. Configure the appropriate IPv6 addresses on R1.
+3. Configure the appropriate IPv6 addresses on each PC.
+4. Attempt to ping between the PCs (IPv4 and IPv6)
+
+
+R1>en
+R1#conf t
+R1(config)#ipv6 unicast-routing 
+R1(config)#int g0/0
+R1(config-if)#ipv6 address 2001:db8:0:1::1/64
+R1(config-if)#int g0/1
+R1(config-if)#ipv6 address 2001:db8:0:2::1/64
+R1(config-if)#int g0/2
+R1(config-if)#ipv6 address 2001:db8:0:3::1/64
+R1(config-if)#end
+R1#
+
+
+- Link-Local Addresses -
+
+R1#sh ipv6 int brief 
+GigabitEthernet0/0         [up/up]
+    FE80::201:97FF:FE9A:AC01
+    2001:DB8:0:1::1
+GigabitEthernet0/1         [up/up]
+    FE80::201:97FF:FE9A:AC02
+    2001:DB8:0:2::1
+GigabitEthernet0/2         [up/up]
+    FE80::201:97FF:FE9A:AC03
+    2001:DB8:0:3::1
+
+
+#PC1
+IP: 2001:DB8:0:1::2/64
+GW: 2001:DB8:0:1::1
+
+#PC2
+IP: 2001:DB8:0:2::2/64
+DG: 2001:DB8:0:2::1
+
+#PC3
+IP: 2001:DB8:0:3::2/64
+GW: 2001:DB8:0:3::1
+
+
+C:\>ping 2001:DB8:0:1::1
+C:\>ping 192.168.2.1
+
+C:\>ping 2001:DB8:0:2::2
+C:\>ping 192.168.2.2
+
+C:\>ping 2001:DB8:0:3::2
+C:\>ping 192.168.3.2
