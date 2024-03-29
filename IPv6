@@ -57,3 +57,126 @@ C:\>ping 192.168.2.2
 
 C:\>ping 2001:DB8:0:3::2
 C:\>ping 192.168.3.2
+
+
+
+--- IPv6 (Part 2) ---
+
+-- EUI-64 Address Configuration --
+
+1. Use EUI-64 to configure IPv6 addresses on G0/1 of R1/R2
+
+*Before configuring the addresses, calculate the EUI-64 interface ID that will be generated on each interface. 
+
+2. Configure the appropriate IPv6 addresses/default gateways on PC1 and PC2.
+
+3. Enable IPv6 on G0/0 of R1/R2 without explicitly configuring an IPv6 address.
+
+4. Configure static routes on R1/R2 to enable PC1 to ping PC2.
+
+Use the 'ipv6 route' command with '?' to learn how to use the command.
+
+*We will study IPv6 static routes in depth in Day 33.
+
+
+-- Configure the IPv6 EUI-64 addresses on G0/1 of R1/R2 --
+
+R1>en
+R1#show interfaces gigabitEthernet 0/1
+
+Hardware is CN Gigabit Ethernet, address is 0030.f236.4502 (bia 0030.f236.4502)
+
+R1#conf t
+R1(config)#ipv6 unicast-routing 
+R1(config)#interface gigabitEthernet 0/1
+R1(config-if)#ipv6 address 2001:db8::/64 eui-64 
+R1(config-if)#do show ipv6 interface brief
+
+MAC 0030.f236.4502
+
+0030.f2		36.4502
+0030.f2ff	fe36.4502
+0030.f2ff.fe36.4502
+0230.f2ff.fe36.4502
+
+2001:db8::230.f2ff.fe36.4502/64
+
+
+R2>en
+R2#show interfaces gigabitEthernet 0/1
+
+Hardware is CN Gigabit Ethernet, address is 0001.63b0.b802 (bia 0001.63b0.b802)
+
+R2#conf t
+R2(config)#ipv6 unicast-routing 
+R2(config)#interface gigabitEthernet 0/1
+R2(config-if)#ipv6 address 2001:db8:0:1::/64 eui-64
+R2(config-if)#do show ipv6 int brief
+
+MAC 0001.63b0.b802
+
+0001.63		b0.b802
+0001.63ff	feb0.b802
+0001.63ff.feb0.b802
+0201.63ff.feb0.b802
+
+2001:db8:0:1:201.63ff.feb0.b802/64
+
+
+-- Enable IPv6 on G0/0 of R1/R2 without explicitly configuring an IPv6 address --
+
+R1>en
+R1#conf t
+R1(config)#interface gigabitEthernet 0/0
+R1(config-if)#ipv6 enable 
+R1(config-if)#do show ipv6 int brief
+
+R2#
+R2#conf t
+R2(config)#int gigabitEthernet 0/0
+R2(config-if)#ipv6 enable 
+R2(config-if)#do show ipv6 int brief
+
+
+-- Configure static routes on R1/R2 to enable PC1 to ping PC2 --
+
+R1#conf t
+R1(config)#ipv6 route ?
+  X:X:X:X::X/<0-128>  IPv6 prefix
+
+R1(config)#ipv6 route 2001:db8:0:1::/64 g0/0 FE80::201:63FF:FEB0:B801
+R1(config)#
+
+R2#conf t
+R2(config)#ipv6 route 2001:db8::/64 g0/0 FE80::230:F2FF:FE36:4501
+R2(config)#end
+R2#
+
+
+
+--- IPv6 (Part 3) ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
