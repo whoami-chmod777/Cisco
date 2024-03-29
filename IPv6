@@ -5,6 +5,73 @@ IPv6
 · Static routing with Main Route & Backup Route
 
 
+-- How to convert the MAC address --
+
+1: Divide the MAC address in half
+1234 5678 90AB
+
+2: Insert FFFE in the middle
+1234 56FF FE78 90AB
+
+3: Invert the 7th bit
+1234 56FF FE78 90AB → 1034 56FF FE78 90AB
+0010 0000 → 0000 0000
+
+Example:
+
+MAC 0030.f236.4502
+
+0030.f2		36.4502
+0030.f2ff	fe36.4502
+
+0030.f2ff.fe36.4502
+0230.f2ff.fe36.4502
+
+2001:db8::230.f2ff.fe36.4502/64
+
+
+-- IPv6 Address Representation --
+
+· Leading 0s MUST be removed
+2001:0db8:0000:0001:0f2a:4fff:fea3:00b1
+→ 2001:db8:0:1:f2a:4fff:fea3:b1
+
+· :: MUST be used to shorten the longest string of all-0 quartets. (if there is only one all-0 quartet, don’t use ‘::’)
+2001:0000:0000:0000:0f2a:0000:0000:00b1
+→ 2001::f2a:0:0:b1
+
+· If there are two equal-length choices for the ::, use :: to shorten the one on the left.
+2001:0db8:0000:0000:0f2a:0000:0000:00b1
+→ 2001:db8::f2a:0:0:b1
+
+· Hexadecimal characters ‘a’, ‘b’, ‘c’, ‘d’, ‘e’, and ‘f’ MUST be written using lowercase NOT upper-case A B C D E F
+
+
+-- IPv6 Static Routing --
+
+ipv6 route destination/prefix-length {next-hop | exit-interface [next-hop]} [ad]
+
+Recursive static route: Only the next hop is specified:
+ipv6 route destination/prefix-length next-hop
+R1(config)# ipv6 route 2001:db8:0:3::/64 2001:db8:0:12::2
+
+Fully specified static route: Both the exit interface and next hop are specified:
+ipv6 route destination/prefix-length exit-interface next-hop
+R1(config)# ipv6 route 2001:db8:0:3::/64 g0/0 2001:db8:0:12::2
+
+Network route:
+R1(config)# ipv6 route 2001:db8:0:3::/64 2001:db8:0:12::2
+
+Host route:
+R2(config)# ipv6 route 2001:db8:0:1::100/128 2001:db8:0:12::1
+R2(config)# ipv6 route 2001:db8:0:3::100/128 2001:db8:0:23::2
+
+Default route:
+R3(config)# ipv6 route ::/0 2001:db8:0:23::1
+
+
+
+
 --- IPv6 (Part 1) ---
 
 -- IPv4/IPv6 'Dual-Stack' Configuration --
