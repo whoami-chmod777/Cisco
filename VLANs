@@ -5,6 +5,7 @@
 · VLANs Trunk
 · Router in a ROAS
 · Inter VLAN Routing (Multilayer Switching)
+· Trobleshooting Commands
 
 
 --- VLAN Configuration 1 ---
@@ -246,10 +247,18 @@ SW2#sh vlan brief
 
 
 
+-- Trobleshooting Commands --
 
+Switch#show arp
+Switch#show mac address-table 
 
+Switch#clear arp
+Switch#clear arp-cache 
 
-
+Switch#show vlan
+Switch#show vlan brief 
+Switch#show interfaces status 
+Switch#show interfaces fastEthernet 0/3 switchport
 
 
 
