@@ -1,0 +1,84 @@
+
+-- Voice VLAN --
+
+SW1#show interfaces gigabitEthernet <interface> switchport
+
+SW1#conf t
+SW1(config)#interface gigabitEthernet 1/0/1
+SW1(config-if)#switchport voice vlan 2
+SW1(config-if)#end
+
+
+# Configure the switchport such that it instructs the IP Phone to forward Ethernet frames containing digitized Voice with an 802.1q tag of VLAN-10, and all data frames from the connected laptop should forwarded untagged. These data frames area to be considered to be in VLAN-88.
+
+SW1#show interfaces gigabitEthernet 1/0/2 switchport
+SW1#conf t
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 88
+SW1(config-if)#switchport voice vlan 10
+SW1(config-if)#switchport trunk allowed vlan except 11
+SW1(config-if)#spanning-tree portfast
+SW1(config-if)#end
+SW1#
+
+
+# Configuration VLAN 100 for the PC's and VLAN 101 for IP Phone
+
+SW1(config)#vlan 100
+SW1(config-vlan)#name COMPUTER
+SW1(config-vlan)#exit
+
+SW1(config)#vlan 101
+SW1(config-vlan)#name VOIP
+SW1(config-vlan)#exit
+
+SW1(config)#interface GigabitEthernet 0/1
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 100
+SW1(config-if)#switchport voice vlan 101
+SW1(config-if)#exit
+
+SW1#show interfaces GigabitEthernet 0/1 switchport
+Name: Gi0/1
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: Off
+Access Mode VLAN: 100 (COMPUTER)
+Trunking Native Mode VLAN: 1 (default)
+Administrative Native VLAN tagging: enabled
+Voice VLAN: 101 (VOIP)
+Administrative private-vlan host-association: none 
+Administrative private-vlan mapping: none 
+Administrative private-vlan trunk native VLAN: none
+Administrative private-vlan trunk Native VLAN tagging: enabled
+Administrative private-vlan trunk encapsulation: dot1q
+Administrative private-vlan trunk normal VLANs: none
+Administrative private-vlan trunk associations: none
+Administrative private-vlan trunk mappings: none
+Operational private-vlan: none
+Trunking VLANs Enabled: ALL
+Pruning VLANs Enabled: 2-1001
+Capture Mode Disabled
+Capture VLANs Allowed: ALL
+
+Protected: false
+Unknown unicast blocked: disabled
+Unknown multicast blocked: disabled
+Appliance trust: none
+
+SW1#show interfaces GigabitEthernet 0/1 trunk
+
+Port        Mode             Encapsulation  Status        Native vlan
+Gi0/1      off              negotiate      not-trunking  1
+
+Port        Vlans allowed on trunk
+Gi0/1      100-101
+
+Port        Vlans allowed and active in management domain
+Gi0/1      100-101
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Gi0/1      100-101
