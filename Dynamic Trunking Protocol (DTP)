@@ -1,0 +1,60 @@
+
+# Valid pairing of trunking modes will sucessfully form a VLAN Trunk (DTS)
+
+mode desirable --- mode desirable
+mode auto --- mode desirable 
+mode trunk --- mode auto
+
+
+-- Verifying DTP --
+
+Switch#show interfaces trunk 
+Switch#show interfaces fastEthernet 0/1 switchport
+
+
+-- Configuring DTP --
+
+Switch# switchport mode dynamic [desirable | auto ]
+
+-- Disabling DTP --
+
+Switch# switchport nonegotiate
+
+
+Switch#
+Switch#conf t
+Switch(config)#interface fastEthernet 0/1
+Switch(config-if)#shutdown 
+Switch(config-if)#switchport mode dynamic desirable 
+Switch(config-if)#switchport mode trunk encapsulation dotq1
+Switch(config-if)#no shutdown 
+Switch(config-if)#end
+Switch#
+
+
+
+-- Example Config --
+
+Switch-1#conf t
+Switch-1(config)#interface gigabitEthernet 1/0
+Switch-1(config-if)#shutdown 
+Switch-1(config-if)#switchport mode dynamic desirable 
+
+Switch-1(config-if)#switchport trunk encapsulation ?     
+  dot1q      Interface uses only 802.1q trunking encapsulation when trunking
+  isl        Interface uses only ISL trunking encapsulation when trunking
+  negotiate  Device will negotiate trunking encapsulation with peer on
+             interface
+
+Switch-1(config-if)#switchport trunk encapsulation negotiate 
+Switch-1(config-if)#no shutdown 
+Switch-1(config-if)#end
+Switch-1#
+
+
+Switch-2#conf t
+Switch-2(config)#default interface gigabitEthernet 1/0
+Switch-2(config-if)#no shutdown 
+Switch-2(config)#end
+Switch-2#
+
