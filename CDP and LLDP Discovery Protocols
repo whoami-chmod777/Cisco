@@ -1,36 +1,60 @@
 
-
 SW1#show ip interface brief 
 
 SW1#show cdp 
 SW1#show cdp neighbors 
 SW1#show cdp neighbors detail 
 
-
--- Enabling CDP --
-
-Router(config)# cdp run
-Router(config)# cdp timer <seconds>
+SW1# show cdp traffic
+SW1# show cdp interface
+SW1# show cdp entry R1
 
 
--- Disabling CDP -- 
+# Enabling CDP
 
-Router(config)# no cdp run
-Router(config-if)# no cdp enable
+R1(config)# cdp run
+R1(config)# no cdp run
+
+R1(config-if)# cdp enable
+R1(config-if)# no cdp enable
+
+R1(config)# cdp timer seconds
+R1(config)# cdp holdtime seconds
+
+R1(config)# cdp advertise-v2
+R1(config)# no cdp advertise-v2
 
 
--- Verifying CDP -- 
+# Verifying CDP 
 
 SW1#show cdp neighbors 
 SW1#show cdp neighbors detail 
 SW1#show cdp neighbors <interface> detail
 
 
--- LLDP Configuration --
+
+# LLDP Configuration
+
+R1# show lldp
+R1# show lldp traffic
+R1# show lldp interface
+
+R1# show lldp neighbors
+R1# show lldp neighbors detail
+
+R1# show lldp entry R1
+
+
+# LLDP Configuration Commands
 
 Router1(config)# lldp run
-Router1(config)# lldp holdtime 150
 Router1(config)# lldp timer 15
+Router1(config)# lldp holdtime 150
+Router1(config)# lldp reinit seconds
+
 Router2(config)# interface ethernet 0/0
-Router2(config)# lldp transmit
-Router2(config)# end
+Router2(config-if)# lldp transmit
+Router2(config-if)# lldp receive
+Router2(config-if)# end
+
+Router2(config)# show switch lldp statistics
