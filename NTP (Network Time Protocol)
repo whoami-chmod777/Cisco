@@ -1,0 +1,234 @@
+
+-- Manual Time Configuration --
+
+R1# show clock
+R1# show clock detail
+R1# clock set hh:mm:ss {day|month} {month|day} year
+R1# show calendar
+R1# calendar set hh:mm:ss {day|month} {month|day} year
+
+R1(config)# clock timezone name hours-offset [minutes-offset]
+R1(config)# clock summer-time recurring name start end [offset]
+
+
+-- Basic Configuration Commands --
+ 
+R1(config)# ntp server ip-address [prefer]
+R1(config)# ntp peer ip-address
+R1(config)# ntp update-calendar
+R1(config)# ntp master [stratum]
+R1(config)# ntp source interface
+
+
+-- Basic Show Commands --
+ 
+R1# show ntp associations
+R1# show ntp status
+
+
+-- Basic Authentication Commands --
+ 
+R1(config)# ntp authenticate
+R1(config)# ntp authentication-key key-number md5 key
+R1(config)# ntp trusted-key key-number
+R1(config)# ntp server ip-address key key-number
+R1(config)# ntp peer ip-address key key-number
+
+
+-- Network Time Protocol --
+
+C:\Users\user>nslookup time.windows.com
+C:\Users\user>nslookup time.google.com
+
+
+-- Reference Clocks --
+
+● Reference clocks are stratum 0.
+● Stratum 1 NTP servers get their time from reference clocks.
+● Stratum 2 NTP servers get their time from stratum 1 NTP servers. 
+● Stratum 3 NTP servers get their time from stratum 2 NTP servers. 
+● Stratum 15 is the maximum. Anything above that is considered unreliable.
+
+
+-- Show Basic Time Commands --
+
+R1# show logging
+
+R1# show clock
+R1# show clock detail
+
+R1# show calendar
+R1# clock read-calendar
+
+
+-- Software Clock Configuration --
+
+R2# clock set 14:30:00 27 Dec 2020
+
+
+-- Hardware Clock (Calendar) Configuration --
+
+R2# calendar set 14:35:00 27 Dec 2020
+
+
+-- Configuring the Time Zone --
+
+R2(config)# clock timezone JST 9
+
+
+-- Daylight Saving Time (Summer Time) --
+
+R2(config)# clock summer-time EDT recurring 2 Sunday March 02:00 1 Sunday November 02:00
+
+
+-- Basic Configuration Commands --
+
+R1(config)# ntp server 216.239.35.0 prefer
+R1(config)# ntp server 216.239.35.4
+
+R1(config)# ntp peer 10.0.23.2
+R3(config)# ntp peer 10.0.23.1
+
+R1(config)# ntp update-calendar
+
+R1(config)# ntp master
+
+R1(config)# ntp master [stratum]
+R1(config)# ntp source loopback0
+
+
+-- Basic Show Commands --
+
+R1# show ntp associations
+R1# show ntp status
+
+
+-- Basic Authentication Commands --
+
+R1(config)# ntp authenticate
+R1(config)# ntp authentication-key key-number md5 key
+R1(config)# ntp trusted-key key-number
+R1(config)# ntp server ip-address key key-number
+R1(config)# ntp peer ip-address key key-number
+
+
+-- Configuring NTP Authentication --
+
+R1(config)#ntp authenticate
+R1(config)#ntp authentication-key 1 md5 jeremysitlab
+R1(config)#ntp trusted-key 1
+
+R2(config)#ntp authenticate
+R2(config)#ntp authentication-key 1 md5 jeremysitlab
+R2(config)#ntp trusted-key 1
+R2(config)#ntp server 10.0.12.1 key
+R2(config)#ntp peer 10.0.23.2 key 1
+
+R3(config)#ntp authenticate
+R3(config)#ntp authentication-key 1 md5 jeremysitlab
+R3(config)#ntp trusted-key 1
+R3(config)#ntp server 10.0.12.1 key 1
+R2(config)#ntp peer 10.0.23.1 key 1
+
+
+
+-- Example Configuration --
+
+ROUTING HAS BEEN PRECONFIGURED
+
+[default route on R1, OSPF on all routers with 'network 0.0.0.0 255.255.255.255 area 0']
+
+
+1. Configure the software clock on R1, R2, and R3 to 12:00:00 Dec 30 2020 (UTC).
+
+2. Configure the time zone of R1, R2, and R3 to match your own.
+
+3. Configure R1 to synchronize to NTP server 1.1.1.1 over the Internet. What stratum is 1.1.1.1?  What stratum is R1?
+
+4. Configure R1 as a stratum 8 NTP master. Synchronize R2 and R3 to R1 with authentication. *the 'ntp source' command is not available in Packet Tracer, so just use the physical interface IP addresses of R1.
+
+5. Configure NTP to update the hardware calendars of R1, R2, and R3. *you can't view the calendar in Packet Tracer
+
+
+Configure the software clock on R1, R2, and R3 to 12:00:00 Dec 30 2020 (UTC). Configure the time zone of R1, R2, and R3 to match your own.
+
+R1>
+R1>en
+R1#clock set 12:00:00 Dec 30 2020
+R1#conf t
+R1(config)#clock timezone JST 9
+R1(config)#do show clock detail
+21:2:43.936 JST Wed Dec 30 2020
+Time source is user configuration
+R1(config)#
+
+
+Configure R1 to synchronize to NTP server 1.1.1.1 over the Internet.
+
+R1(config)#ntp server 1.1.1.1
+R1(config)#
+R1(config)#do show ntp associations
+
+address         ref clock       st   when     poll    reach  delay          offset            disp
+ ~1.1.1.1       127.127.1.1     1    10       16      1      0.00           -28641414.00      0.00
+ * sys.peer, # selected, + candidate, - outlyer, x falseticker, ~ configured
+R1(config)#
+
+
+Configure R1 as a stratum 8 NTP master. Synchronize R2 and R3 to R1 with authentication
+
+R1(config)#ntp master 
+R1(config)#ntp authenticate
+R1(config)#ntp authentication-key 1 md5 password
+R1(config)#ntp trusted-key 1
+R1(config)#
+
+R2#conf t
+R2(config)#ntp authenticate
+R2(config)#ntp authentication-key 1 md5 password
+R2(config)#ntp trusted-key 1
+R2(config)#ntp server 192.168.12.1 key 1
+
+
+Configure NTP to update the hardware calendars of R1, R2, and R3
+ 
+R1(config)#ntp update-calendar
+
+R1>
+R1>en
+R1#clock set 12:00:00 Dec 30 2020
+R1#conf t
+R1(config)#clock timezone JST 9
+R1(config)#ntp server 1.1.1.1
+R1(config)#ntp master 
+R1(config)#ntp authenticate
+R1(config)#ntp authentication-key 1 md5 password
+R1(config)#ntp trusted-key 1
+R2(config)#ntp server 192.168.12.1 key 1
+
+R1(config)#ntp update-calendar 
+R1(config)#end
+R1#
+
+
+R1#show ntp associations
+
+address         ref clock       st   when     poll    reach  delay          offset            disp
+*~1.1.1.1       127.127.1.1     1    15       16      7      0.00           0.00              0.12
+ * sys.peer, # selected, + candidate, - outlyer, x falseticker, ~ configured
+
+R1#show ntp status
+Clock is synchronized, stratum 2, reference is 1.1.1.1
+nominal freq is 250.0000 Hz, actual freq is 249.9990 Hz, precision is 2**24
+reference time is E369A9DC.000000BB (4:13:16.187 UTC Wed Dec 30 2020)
+clock offset is 0.00 msec, root delay is 0.00  msec
+root dispersion is 21.84 msec, peer dispersion is 0.12 msec.
+loopfilter state is 'CTRL' (Normal Controlled Loop), drift is - 0.000001193 s/s system poll interval is 4, last update was 6 sec ago.
+
+R1#show clock detail 
+13:13:35.112 JST Wed Dec 30 2020
+Time source is NTP
+R1#
+R1#
+
+
