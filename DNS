@@ -1,0 +1,130 @@
+C:\Users\user>ipconfig /all
+C:\Users\user>ipconfig /displaydns
+C:\Users\user>ipconfig /flushdns
+
+C:\Users\user>nslookup youtube.com
+
+C:\Windows\System32\drivers\etc --> hosts
+
+C:\Users\user>ping PC2 -n 1
+C:\Users\user>ping youtube.com -n 1
+
+
+-- DNS in Cisco IOS --
+
+R1#show hosts
+R1(config)#ip name-server 8.8.8.8
+R1(config)#ip domain lookup
+
+
+-- Configure R1 to act as a DNS server --
+
+R1(config)#ip dns server
+
+
+-- Configure a list of hostname/IP address mappings --
+
+R1(config)#ip host R1 192.168.0.1
+R1(config)#ip host PC1 192.168.0.101
+R1(config)#ip host PC2 192.168.0.102
+R1(config)#ip host PC3 192.168.0.103
+
+
+-- Configure a DNS server that R1 --
+
+R1(config)#ip name-server 8.8.8.8
+
+
+-- Enable R1 to perform DNS queries (enabled by default) --
+
+R1(config)#ip domain lookup
+R1(config)#ip domain-lookup (old version)
+
+
+-- Windows Command Review --
+
+C:\Users\user>ipconfig /all
+C:\Users\user>nslookup name
+C:\Users\user>ipconfig /displaydns
+C:\Users\user>ipconfig /flushdns
+C:\Users\user>ping ip-address -n number
+
+
+-- Cisco Command Review --
+
+R1(config)#ip dns server
+R1(config)#ip host hostname ip-address
+R1(config)#ip name-server ip-address
+R1(config)#ip domain lookup
+R1(config)#ip domain name domain-name
+R1#show hosts
+
+
+
+-- Config Example --
+
+1. Configure a default route to the Internet on R1.
+2. Configure PC1, PC2, and PC3 to use 1.1.1.1 as their DNS server.
+3. Configure R1 to use 1.1.1.1 as its DNS server. Configure host entries on R1 for R1, PC1, PC2, and PC3. Ping PC1 by name from R1
+
+
+-- Configure a default route --
+
+R1>en
+R1#conf t
+R1(config)#ip route 0.0.0.0 0.0.0.0 203.0.113.2
+R1(config)#end
+R1#
+
+R1#sh ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is 203.0.113.2 to network 0.0.0.0
+
+     192.168.0.0/24 is variably subnetted, 2 subnets, 2 masks
+C       192.168.0.0/24 is directly connected, GigabitEthernet0/1
+L       192.168.0.254/32 is directly connected, GigabitEthernet0/1
+     203.0.113.0/24 is variably subnetted, 2 subnets, 2 masks
+C       203.0.113.0/30 is directly connected, GigabitEthernet0/0
+L       203.0.113.1/32 is directly connected, GigabitEthernet0/0
+S*   0.0.0.0/0 [1/0] via 203.0.113.2
+
+
+
+-- Configure PC1, PC2, and PC3 to use 1.1.1.1 as their DNS server --
+
+1.1.1.1
+
+
+
+-- Configure R1 to use 1.1.1.1 as DNS server and host entries for R1, PC1, PC2 --
+
+R1#conf t
+
+R1(config)#ip name-server 1.1.1.1
+R1(config)#ip host PC1 192.168.0.1
+R1(config)#ip host PC2 192.168.0.2
+R1(config)#ip host PC3 192.168.0.3
+R1(config)#end
+
+R1#sh hosts 
+Default Domain is not set
+Name/address lookup uses domain service
+Name servers are 1.1.1.1
+
+Codes: UN - unknown, EX - expired, OK - OK, ?? - revalidate
+       temp - temporary, perm - permanent
+       NA - Not Applicable None - Not defined
+
+Host                      Port  Flags      Age Type   Address(es)
+PC1                       None  (perm, OK)  0   IP      192.168.0.1
+PC2                       None  (perm, OK)  0   IP      192.168.0.2
+PC3                       None  (perm, OK)  0   IP      192.168.0.3
+R1#
+
