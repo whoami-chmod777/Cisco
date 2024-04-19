@@ -1,0 +1,164 @@
+
+-- Basic Functions of DHCP --
+
+# DHCP ACK 
+
+DHCP Discover: Are there any DHCP servers in this network? I need an IP address
+DHCP Offer: How about this IP address?
+DHCP Request: I want to use the IP address you offered me
+DHCP Ack: Okay, you may use it
+
+Discover Client → Server --> Broadcast
+Offer Server → Client --> Broadcast or Unicast
+Request Client → Server --> Broadcast
+Ack Server → Client --> Broadcast or Unicast
+Release Client → Server --> Unicast
+
+
+C:\Users\user>ipconfig /all
+C:\Users\user>ipconfig /release
+C:\Users\user>ipconfig /renew
+
+-- Configuration as DHCP Server --
+
+R1(config)#ip dhcp excluded-address 192.168.1.1 192.168.1.10
+R1(config)#ip dhcp pool LAB_POOL
+
+R1(dhcp-config)#network 192.168.1.0 ?
+/nn or A.B.C.D Network mask or prefix length
+<cr>
+R1(dhcp-config)#network 192.168.1.0 /24
+
+R1(dhcp-config)#dns-server 8.8.8.8
+R1(dhcp-config)#domain-name jeremysitlab.com
+R1(dhcp-config)#default-router 192.168.1.1
+R1(dhcp-config)#lease 0 5 30
+R1(dhcp-config)#lease infinite
+
+R1#show ip dhcp binding
+
+
+-- Configuration DHCP Relay Agent --
+
+R1(config)#interface g0/1
+R1(config-if)#ip helper-address 192.168.10.10
+
+R1(config-if)#do show ip interface g0/1
+GigabitEthernet0/1 is up, line protocol is up
+Internet address is 192.168.1.1/24
+Broadcast address is 255.255.255.255
+Address determined by non-volatile memory
+MTU is 1500 bytes
+Helper address is 192.168.10.10
+[output omitted]
+
+
+-- Configuration DHCP Client --
+
+R2(config)#interface g0/1
+R2(config-if)#ip address dhcp
+
+R2(config-if)#do sh ip interface g0/1
+GigabitEthernet0/1 is up, line protocol is up
+Internet address is 192.168.10.1/24
+Broadcast address is 255.255.255.255
+Address determined by DHCP
+[output omitted]
+
+
+-- Command Summary --
+
+C:\Users\user> ipconfig /release
+C:\Users\user> ipconfig /renew
+
+- DHCP server -
+
+R1(config)# ip dhcp excluded-address low-address high-address
+R1(config)# ip dhcp pool pool-name
+R1(dhcp-config)# network ip-address {/prefix-length | subnet-mask}
+R1(dhcp-config)# dns-server ip-address
+R1(dhcp-config)# domain-name domain-name
+R1(dhcp-config)# default-router ip-address
+R1(dhcp-config)# lease {days hours minutes | infinite}
+R1# show ip dhcp binding
+- DHCP relay agent -
+R1(config-if)# ip helper-address ip-address
+- DHCP client -
+R1(config-if)# ip address dhcp
+
+
+
+-- DHCP Example --
+
+1. Configure the following DHCP pools on R2:
+
+POOL1: 192.168.1.0/24 (reserve .1 to .10)
+     DNS 8.8.8.8
+     Domain: jeremysitlab.com
+     Default Gateway: R1
+POOL2: 192.168.2.0/24 (reserve .1 to .10)
+     DNS 8.8.8.8
+     Domain: jeremysitlab.com
+     Default Gateway: R2
+POOL3: 203.0.113.0/30 (reserve .1)
+
+2. Configure R1's G0/0 interface as a DHCP client.
+
+3. Configure R1 as a DHCP relay agent for the 192.168.1.0/24 subnet.
+
+
+-- Configure the following DHCP pools on R2 --
+
+R2#conf t
+R2(config)#ip dhcp excluded-address 192.168.1.1 192.168.1.10
+R2(config)#ip dhcp excluded-address 192.168.2.1 192.168.2.10
+R2(config)#ip dhcp excluded-address 203.0.113.1
+
+R2(config)#ip dhcp pool POOL1
+R2(dhcp-config)#network 192.168.1.0 255.255.255.0
+R2(dhcp-config)#dns-server 8.8.8.8
+R2(dhcp-config)#domain-name jeremysitlab.com
+R2(dhcp-config)#default-router 192.168.1.1
+R2(dhcp-config)#exit
+
+R2(config)#ip dhcp pool POOL2
+R2(dhcp-config)#network 192.168.2.0 255.255.255.0
+R2(dhcp-config)#dns-server 8.8.8.8
+R2(dhcp-config)#domain-name jeremysitlab.com
+R2(dhcp-config)#default-router 192.168.2.1
+R2(dhcp-config)#exit
+
+R2(config)#ip dhcp pool POOL3
+R2(dhcp-config)#network 203.0.113.0 255.255.255.252
+R2(dhcp-config)#end
+R2#
+
+
+R2#sh run | include dhcp
+ip dhcp excluded-address 192.168.1.1 192.168.1.10
+ip dhcp excluded-address 192.168.2.1 192.168.2.10
+ip dhcp excluded-address 203.0.113.1
+ip dhcp pool POOL1
+ip dhcp pool POOL2
+ip dhcp pool POOL3
+R2#
+
+
+-- Configure R1's G0/0 interface as a DHCP client --
+
+R1#conf t
+R1(config)#int g0/0
+R1(config-if)#no shutdown 
+%DHCP-6-ADDRESS_ASSIGN: Interface GigabitEthernet0/0 assigned DHCP address 203.0.113.2, mask 255.255.255.252, hostname R1
+R1(config-if)#end
+R1#
+
+
+-- Configure R1 as a DHCP relay agent for the 192.168.1.0/24 subnet --
+
+R1#conf t
+R1(config)#int gigabitEthernet 0/1
+R1(config-if)#ip helper-address 203.0.113.1
+R1(config-if)#end
+R1#
+
