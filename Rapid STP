@@ -175,3 +175,22 @@ SW2#debug spanning-tree bpdu
 
 SW2#show spanning-tree | begin Interface
 
+
+-- Manipulating Costs --
+
+Switch>
+Switch>en
+Switch#conf t
+Switch(config)#interface ethernet 5/1
+Switch(config-if)#spanning-tree vlan 2 cost 18
+Switch(config-if)#end
+Switch#
+
+
+-- Manipulating Port-Priority --
+
+Switch#
+Switch(config)#int ethernet 6/1
+Switch(config-if)#spanning-tree vlan 2 port-priority 112
+Switch(config-if)#end
+Switch#
