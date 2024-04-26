@@ -194,3 +194,23 @@ Switch(config)#int ethernet 6/1
 Switch(config-if)#spanning-tree vlan 2 port-priority 112
 Switch(config-if)#end
 Switch#
+
+
+-- Hello Timer & Forwarding Delay -- 
+
+SW1(config)#spanning-tree mode rapid-pvst
+
+SW1(config)#spanning-tree vlan 100 hello-time 4
+SW1(config)#spanning-tree vlan 100 forward-time 20
+
+
+-- Message Max Age --
+ 
+SW1(config)#spanning-tree vlan 100 max-age 30
+
+
+-- RSTP Show Commands --
+
+SW3#show spanning-tree
+SW2#show spanning-tree | begin Interface
+SW2#debug spanning-tree bpdu
