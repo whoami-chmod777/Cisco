@@ -1,0 +1,200 @@
+
+-- Syslog Severity Levels --
+
+0 Emergency: System is unusable
+1 Alert: Action must be taken immediately
+2 Critical: Critical conditions
+3 Error: Error conditions
+4 Warning: Warning conditions
+5 Notice: Normal but significant condition (Notification)
+6 Informational: Informational messages
+7 Debugging: Debug-level messages
+
+
+-- Syslog Message Examples --
+
+seq:time stamp: %facility-severity-MNEMONIC:description
+
+*Feb 11 03:02:55.304: %LINK-3-UPDOWN: Interface GigabitEthernet0/0, changed state to up
+
+*Feb 11 05:04:39.606: %OSPF-5-ADJCHG: Process 1, Nbr 192.168.1.2 on GigabitEthernet0/0 from
+LOADING to FULL, Loading Done
+
+000043: *Feb 11 05:06:43.331: %SYS-5-CONFIG_I: Configured from console by jeremy on console
+
+*Feb 11 07:27:23.346: %SYS-6-CLOCKUPDATE: System clock has been updated from 07:27:23 UTC Thu Feb
+11 2021 to 16:27:23 JST Thu Feb 11 2021, configured from console by jeremy on console.
+
+
+
+-- Syslog Configuration --
+
+#Logging to the console line
+R1(config)#logging console 6
+
+#Logging to the vty lines
+R1(config)#logging monitor informational
+
+#Logging to the buffer
+R1(config)#logging buffered 8192 6
+
+#Logging to an external server
+R1(config)#logging 192.168.1.100
+R1(config)#logging host 192.168.1.100
+R1(config)#logging trap debugging
+
+#For the messages to be displayed
+R1#terminal monitor
+
+#Logging synchronous
+R1(config)#line console 0
+R1(config-line)#logging synchronous
+R1(config)#exit
+
+#Service Timestamps / Service Sequence-Numbers
+R1(config)#service timestamps log datetime
+R1(config)#service sequence-numbers
+R1(config)#exit
+
+
+-- Syslog Command Summary --
+
+R1(config)# logging console severity
+R1(config)# logging monitor severity
+R1(config)# logging buffered [size] severity
+R1(config)# logging server-ip
+R1(config)# logging host server-ip
+R1(config)# logging trap severity
+R1# terminal monitor
+R1(config-line)# logging synchronous
+R1(config)# service timestamps log [datetime | uptime]
+R1(config)# service sequence-numbers
+
+
+-- Explanation --
+
+!configure logging to the console line
+R1(config)#logging console 6
+
+logging console level
+*you can use the level number (6) or keyword (informational)
+*this will enable logging for the informational severity and higher
+
+***********************************************************************************
+
+!configure logging to the vty lines
+R1(config)#logging monitor informational
+
+logging monitor level
+*same points as above about the level
+
+***********************************************************************************
+
+!configure logging to the buffer
+R1(config)#logging buffered 8192 6
+
+logging buffered [size] level
+*same points as above about the level
+*buffer size is in bytes
+
+***********************************************************************************
+
+!configure logging to an external server
+R1(config)#logging 192.168.1.100
+R1(config)#logging host 192.168.1.100
+R1(config)#logging trap debugging
+
+logging server-ip
+logging host server-ip
+*these commands are the same!
+
+logging trap level
+*same points as above about the level
+*this sets the logging level for the external server
+
+
+
+-- Syslog Example Configuration --
+
+R1 username: jeremy, PW: ccna, enable PW: ccna
+
+1. Connect to R1's console port using PC2:
+     -Shut down the G0/0 interface
+     -After you receive a syslog message, re-enable the interface.
+     -What is the severity level of the syslog messages?
+     -Enable timestamps for logging messages
+
+2. Telnet from PC1 to R1's G0/0 interface (watch the video to learn how!)
+     -Enable the unused G0/1 interface
+     -Why does no syslog message appear?
+     -Enable logging to the VTY lines for the current session.
+     *there is no 'logging monitor' command in packet tracer, but it's enabled by           default
+
+3. Enable logging to the buffer, and configure the buffer size to 8192 bytes.
+4. Enable logging to the syslog server SRV1 with a level of 'debugging'.
+
+
+-- Enable timestamps for logging messages --
+
+R1#conf t
+R1(config)#int g0/0
+R1(config-if)#shutdown 
+R1(config-if)#exit
+
+R1(config)#service timestamps log datetime ?
+  msec  Include milliseconds in timestamp
+
+R1(config)#service timestamps log datetime msec 
+R1(config)#exit
+
+
+-- Enable logging to the VTY lines for the current session --
+
+R1(config)#int
+R1(config)#interface g0/1
+R1(config-if)#no shutdown 
+R1(config-if)#do terminal monitor
+R1(config-if)#shutdown 
+
+R1(config-if)#
+*Feb 28, 16:28:41.2828: %LINK-5-CHANGED: Interface GigabitEthernet0/1, changed state to administratively down
+R1(config-if)#
+
+
+-- Enable logging to the buffer, and configure the buffer size to 8192 bytes --
+
+R1(config)#logging buffered 8192 ?
+  <cr>
+R1(config)#logging buffered 8192 
+R1(config)#
+R1(config)#do sh logging
+Syslog logging: enabled (0 messages dropped, 0 messages rate-limited,
+          0 flushes, 0 overruns, xml disabled, filtering disabled)
+
+No Active Message Discriminator.
+
+    Console logging: level debugging, 9 messages logged, xml disabled,
+          filtering disabled
+    Monitor logging: level debugging, 1 messages logged, xml disabled,
+          filtering disabled
+    Buffer logging:  level debugging, 0 messages logged, xml disabled,
+          filtering disabled
+
+    Logging Exception size (4096 bytes)
+    Count and timestamp logging messages: disabled
+    Persistent logging: disabled
+
+No active filter modules.
+ESM: 0 messages dropped
+R1(config)#end
+R1#
+
+
+-- Enable logging to the syslog server SRV1 with a level of 'debugging' --
+
+R1#
+R1#conf t
+R1(config)#logging trap debugging 
+R1(config)#end
+R1#
+
