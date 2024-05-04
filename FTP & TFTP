@@ -1,0 +1,230 @@
+
+-- IOS File Systems --
+
+Router#show file systems
+
+
+-- Upgrading Cisco IOS -- 
+
+R1#show version
+R1#show flash
+
+
+-- Copying Files (TFTP) --
+
+R1#copy tftp: flash:
+Address or name of remote host []? 192.168.1.1
+Source filename []? c2900-universalk9-mz.SPA.155-3.M4a.bin
+Destination filename [c2900-universalk9-mz.SPA.155-3.M4a.bin]?
+
+
+-- Upgrading Cisco IOS --
+
+R1#show flash
+
+R1#conf t
+R1(config)#boot system flash:c2900-universalk9-mz.SPA.155-3.M4a.bin
+R1(config)#exit
+
+R1#write memory
+Building configuration...
+[OK]
+
+R1#reload
+Proceed with reload? [confirm]
+
+boot system filepath --> *If you don’t use this command, the router will use the first IOS file it finds in flash
+
+
+R1#show version
+Cisco IOS Software, C2900 Software (C2900-UNIVERSALK9-M), Version 15.5(3)M4a, RELEASE SOFTWARE(fc1)
+[output omitted]
+
+R1#delete flash:c2900-universalk9-mz.SPA.151-4.M4.bin
+Delete filename [c2900-universalk9-mz.SPA.151-4.M4.bin]?
+Delete flash:/c2900-universalk9-mz.SPA.151-4.M4.bin? [confirm]
+
+R1#show flash
+
+
+-- Copying Files (FTP) --
+
+R1(config)#ip ftp username cisco
+R1(config)#ip ftp password cisco
+R1(config)#exit
+
+R1#copy ftp: flash:
+Address or name of remote host []? 192.168.1.1
+Source filename []? c2900-universalk9-mz.SPA.155-3.M4a.bin
+Destination filename [c2900-universalk9-mz.SPA.155-3.M4a.bin]?
+
+Accessing ftp://192.168.1.1/c2900-universalk9-mz.SPA.155-3.M4a.bin…
+Loading c2900-universalk9-mz.SPA.155-3.M4a.bin from
+192.168.1.1: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+[output omitted]
+
+
+
+-- Command Review --
+
+R1# show file systems
+R1# show version
+R1# show flash
+
+R1# copy source destination
+R1(config)# boot system filepath
+
+R1(config)# ip ftp username username
+R1(config)# ip ftp password password
+
+
+-- Example File Transfer with TFTP & FTP --
+
+1. Configure the appropriate IP addresses on each device. Configure routing on the routers to allow full connectivity.
+
+2. Use TFTP on R1 to retrieve the following file from SRV1: c2900-universalk9-mz.SPA.155-3.M4a.bin
+
+3. Upgrade R1's OS and then delete the old file from flash.
+
+4. Use FTP on R2 to retrieve the following file from SRV1: c2900-universalk9-mz.SPA.155-3.M4a.bin (FTP username: jeremy, password: ccna)
+**THE TRANSFER MAY TAKE ABOUT A MINUTE**
+
+5. Upgrade R2's OS and then delete the old file from flash.
+
+
+#1
+
+R1>
+R1>en
+R1#sh ip int brief 
+
+R1#conf t
+R1(config)#int g0/1
+R1(config-if)#ip address 10.0.0.254 255.255.255.0
+R1(config-if)#description to_SW1
+R1(config-if)#no shutdown 
+R1(config-if)#end
+R1(config)#int g0/0
+R1(config-if)#ip address 192.168.12.1 255.255.255.252
+R1(config-if)#description to_R2
+R1(config-if)#no shutdown 
+R1(config-if)#end
+R1#
+
+R1#sh ip int brief 
+
+R2>en
+R2#conf t
+R2(config)#int gigabitEthernet 0/0
+R2(config-if)#ip address 192.168.12.2 255.255.255.252
+R2(config-if)#description to_R1
+R2(config-if)#no shutdown 
+R2(config-if)#end
+R2#
+
+R2#sh ip int brief
+
+
+#2
+
+R1#sh version 
+
+R1#show flash: 
+System flash directory:
+File  Length   Name/status
+  3   33591768 c2900-universalk9-mz.SPA.151-4.M4.bin
+  2   28282    sigdef-category.xml
+  1   227537   sigdef-default.xml
+[33847587 bytes used, 221896413 available, 255744000 total]
+249856K bytes of processor board System flash (Read/Write)
+
+R1#
+R1#copy tftp flash: 
+Address or name of remote host []? 10.0.0.1
+Source filename []? c2900-universalk9-mz.SPA.155-3.M4a.bin
+Destination filename [c2900-universalk9-mz.SPA.155-3.M4a.bin]? 
+Accessing tftp://10.0.0.1/c2900-universalk9-mz.SPA.155-3.M4a.bin...
+Loading c2900-universalk9-mz.SPA.155-3.M4a.bin from 10.0.0.1: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+[OK - 33591768 bytes]
+33591768 bytes copied in 1.159 secs (3043137 bytes/sec)
+
+R1#
+R1#show flash: 
+System flash directory:
+File  Length   Name/status
+  3   33591768 c2900-universalk9-mz.SPA.151-4.M4.bin
+  4   33591768 c2900-universalk9-mz.SPA.155-3.M4a.bin
+  2   28282    sigdef-category.xml
+  1   227537   sigdef-default.xml
+[67439355 bytes used, 188304645 available, 255744000 total]
+249856K bytes of processor board System flash (Read/Write)
+
+
+#3
+
+R1#conf t
+R1(config)#boot system flash c2900-universalk9-mz.SPA.155-3.M4a.bin
+R1(config)#exit 
+R1#write 
+Building configuration...
+[OK]
+R1#reload 
+Proceed with reload? [confirm]
+System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
+
+R1#sh flash:
+
+R1#delete flash:c2900-universalk9-mz.SPA.151-4.M4.bin
+Delete filename [c2900-universalk9-mz.SPA.151-4.M4.bin]?
+Delete flash:/c2900-universalk9-mz.SPA.151-4.M4.bin? [confirm]
+
+R1#sh flash: 
+System flash directory:
+File  Length   Name/status
+  4   33591768 c2900-universalk9-mz.SPA.155-3.M4a.bin
+  2   28282    sigdef-category.xml
+  1   227537   sigdef-default.xml
+[33847587 bytes used, 221896413 available, 255744000 total]
+249856K bytes of processor board System flash (Read/Write)
+
+
+#4
+
+R2>en
+R2#show version 
+Cisco IOS Software, C2900 Software (C2900-UNIVERSALK9-M), Version 15.1(4)M4, RELEASE SOFTWARE (fc2)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2012 by Cisco Systems, Inc.
+
+R2#
+R2#conf t
+R2(config)#ip ftp username jeremy
+R2(config)#ip ftp password ccna
+R2(config)#exit
+R2#
+
+R2#copy ftp flash: 
+Address or name of remote host []? 10.0.0.1
+Source filename []? c2900-universalk9-mz.SPA.155-3.M4a.bin
+Destination filename [c2900-universalk9-mz.SPA.155-3.M4a.bin]? 
+Accessing ftp://10.0.0.1/c2900-universalk9-mz.SPA.155-3.M4a.bin..
+
+R2#conf t
+R2(config)#boot system flash c2900-universalk9-mz.SPA.155-3.M4a.bin
+R2(config)#exit
+R2#write
+R2#reload
+
+R2#sh flash: 
+R2#delete flash:c2900-universalk9-mz.SPA.151-4.M4.bin 
+Delete filename [c2900-universalk9-mz.SPA.151-4.M4.bin]?
+Delete flash:/c2900-universalk9-mz.SPA.151-4.M4.bin? [confirm]
+
+R2#sh flash:  
+System flash directory:
+File  Length   Name/status
+  4   33591768 c2900-universalk9-mz.SPA.155-3.M4a.bin
+  2   28282    sigdef-category.xml
+  1   227537   sigdef-default.xml
+[33847587 bytes used, 221896413 available, 255744000 total]
+249856K bytes of processor board System flash (Read/Write)
