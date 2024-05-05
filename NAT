@@ -1,1 +1,101 @@
 
+Network Address Translation (NAT)
+
+-- Part 1 --
+
+Inside Local = The IP address of the inside host, from the perspective of the local network
+*the IP address actually configured on the inside host, usually a private address
+
+Inside Global = The IP address of the inside host, from the perspective of outside hosts
+*the IP address of the inside host after NAT, usually a public address
+
+Outside Local = The IP address of the outside host, from the perspective of the local network
+Outside Global = The IP address of the outside host, from the perspective of the outside network
+
+
+-- Static NAT Configuration --
+
+R1(config)#int g0/1
+R1(config-if)#ip nat inside
+
+R1(config-if)#int g0/0
+R1(config-if)#ip nat outside
+R1(config-if)#exit
+
+R1(config)#ip nat inside source static 192.168.0.167 100.0.0.1
+R1(config)#ip nat inside source static 192.168.0.168 100.0.0.2
+R1(config)#exit
+
+
+R1#show ip nat translations
+Pro Inside global Inside local Outside local Outside global
+udp 100.0.0.1:56310 192.168.0.167:56310 8.8.8.8:53 8.8.8.8:53
+--- 100.0.0.1 192.168.0.167 --- ---
+udp 100.0.0.2:62321 192.168.0.168:62321 8.8.8.8:53 8.8.8
+
+R1#show ip nat translations
+Pro Inside global Inside local Outside local Outside global
+udp 100.0.0.1:56310 192.168.0.167:56310 8.8.8.8:53 8.8.8.8:53
+--- 100.0.0.1 192.168.0.167 --- ---
+udp 100.0.0.2:62321 192.168.0.168:62321 8.8.8.8:53 8.8.8.8:53
+--- 100.0.0.2 192.168.0.168 --- ---
+
+R1#clear ip nat translation *
+
+R1#show ip nat translations
+Pro Inside global Inside local Outside local Outside global
+--- 100.0.0.1 192.168.0.167 --- ---
+--- 100.0.0.2 192.168.0.168 --- ---
+
+R1#show ip nat statistics
+
+
+-- Command Review --
+
+R1(config-if)# ip nat inside
+R1(config-if)# ip nat outside
+R1(config)# ip nat inside source static inside-local-ip inside-global-ip
+
+R1# show ip nat translations
+R1# show ip nat statistics
+
+R1# clear ip nat translation *
+
+
+-- Static NAT Example COnfiguration --
+
+1. Attempt to ping from PC1 to [8.8.8.8](http://8.8.8.8/).  Does the ping work?
+
+2. Configure static NAT on R1.
+> Configure the appropriate inside/outside interfaces
+> Map the IP addresses of PC1, PC2, and PC3 to 100.0.0.x/24
+
+3. Ping [8.8.8.8](http://8.8.8.8/) from PC1 again.  Does the ping work?
+4. Ping [google.com](http://google.com/) from each PC, and then check the NAT translations on R1.
+5. Clear the NAT translations on R1.  Which entries remain?
+
+
+R1>
+R1>en
+R1#conf t
+R1(config)#int g0/0
+R1(config-if)#ip nat outside 
+R1(config-if)#int g0/1
+R1(config-if)#ip na
+R1(config-if)#ip nat inside 
+R1(config-if)#exit 
+R1(config)#
+
+R1(config)#ip nat inside source static 172.16.0.1 100.0.0.1
+R1(config)#ip nat inside source static 172.16.0.2 100.0.0.2
+R1(config)#ip nat inside source static 172.16.0.3 100.0.0.3
+R1(config)#exit 
+R1#
+
+R1#show ip nat translations 
+R1#show ip nat statistics 
+R1#clear ip nat translation *
+
+PC1> ping 8.8.8.8
+PC1> ping google.com
+
