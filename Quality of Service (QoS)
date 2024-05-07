@@ -1,0 +1,285 @@
+
+-- Quality of Service (QoS) --
+
+• Quality of Service (QoS)
+• Voice VLAN
+• QoS
+
+
+-- Quality of Service (QoS) --
+
+# Power over Ethernet (PoE)
+
+Name              Standard #       Watts     Powered Wire Pairs
+
+PoE (Type 1)      802.3af           15            2
+PoE+ (Type 2)     802.3at           30            2
+UPoE (Type 3)     802.3bt           60            4
+UPoE+ (Type 4)    802.3bt           100           4
+
+
+# Quality of Service (QoS)
+
+→ Voice traffic used the PSTN
+→ Data traffic used the IP network (enterprise WAN, Internet, etc)
+
+1) Bandwidth
+→ The overall capacity of the link, measured in bits per second (Kbps, Mbps, Gbps, etc)
+→ QoS tools allow you to reserve a certain amount of a link’s bandwidth for specific kinds of traffic.
+For example: 20% voice traffic, 30% for specific kinds of data traffic, leaving 50% for all other traffic.
+
+2) Delay
+→ The amount of time it takes traffic to go from source to destination = one-way delay
+→ The amount of time it takes traffic to go from source to destination and return = two-way delay
+
+3) Jitter
+→ The variation in one-way delay between packets sent by the same application
+→ IP phones have a ‘jitter buffer’ to provide a fixed delay to audio packets.
+
+4) Loss
+→ The % of packets sent that do not reach their destination
+→ Can be caused by faulty cables.
+→ Can also be caused when a device’s packet queues get full and the device starts discarding packets.
+
+One-way delay: 150 ms or less
+Jitter: 30 ms or less
+Loss: 1% or less
+
+
+
+-- Voice VLAN --
+
+-- IP Phones / Voice VLAN --
+
+# IP Phones
+
+→ VLAN 10 = Data VLAN 
+→ VLAN 11 = Voice VLAN
+
+
+SW1(config)#interface gigabitethernet0/0
+SW1(config-if)#switchport mode access
+SW1(config-if)#switchport access vlan 10
+SW1(config-if)#switchport voice vlan 11
+
+SW1#show interfaces g0/0 switchport
+Name: Gi0/0
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: Off
+Access Mode VLAN: 10 (VLAN0010)
+Trunking Native Mode VLAN: 1 (default)
+Administrative Native VLAN tagging: enabled
+Voice VLAN: 11 (VLAN0011)
+![output omitted]
+
+SW1#show interfaces trunk
+SW1#
+SW1#show interfaces g0/0 trunk
+Port Mode Encapsulation Status Native vlan
+Gi0/0 off negotiate not-trunking 1
+Port Vlans allowed on trunk
+Gi0/0 10-11
+Port Vlans allowed and active in management domain
+Gi0/0 10-11
+Port Vlans in spanning tree forwarding state and not pruned
+Gi0/0 10-11
+
+
+# Power over Ethernet (PoE)
+
+power inline police:
+
+→ power inline police action errdisable
+→ power inline police action log
+
+
+SW1# conf t
+Enter configuration commands, one per line. End with CNTL/Z.
+SW1(config)# int g0/0
+SW1(config-if)# power inline police
+SW1(config-if)# end
+
+SW1# show power inline police g0/0
+Available:800(w) Used:32(w) Remaining:768(w)
+Interface Admin Oper Admin Oper Cutoff Oper
+State State Police Police Power Power
+--------- ------ ---------- ---------- ---------- ------ -----
+Gi2/1 auto on errdisable ok 17.2 16.7
+
+
+SW1# conf t
+Enter configuration commands, one per line. End with CNTL/Z.
+SW1(config)# int g0/0
+SW1(config-if)# power inline police action log
+SW1(config-if)# end
+
+SW1# show power inline police g0/0
+Available:800(w) Used:32(w) Remaining:768(w)
+Interface Admin Oper Admin Oper Cutoff Oper
+State State Police Police Power Power
+--------- ------ ---------- ---------- ---------- ------ -----
+Gi0/0 auto on log ok 17.2 16.7
+
+
+
+-- Example Configuration --
+
+**Telephony configurations (not relevant to the CCNA) have been pre-configured on R1**
+
+1. Configure SW1's interfaces in the appropriate VLANs.
+2. Configure ROAS for the connection between SW1 and R1.
+
+
+#1
+
+SW1>en
+SW1#conf t
+SW1(config)#interface range g1/0/2-3
+SW1(config-if-range)#switchport access vlan 10
+SW1(config-if-range)#switchport voice vlan 20
+SW1(config-if-range)#int g1/0/1
+SW1(config-if)#switchport trunk encapsulation dot1q
+SW1(config-if)#switchport mode trunk 
+SW1(config-if)#switchport trunk allowed vlan 10,20
+SW1(config-if)#end
+SW1#
+
+SW1#sh interfaces trunk 
+
+SW1#show run | include trunk
+ switchport trunk allowed vlan 10,20
+ switchport mode trunk
+SW1#
+
+
+#2
+
+R1>en
+R1#conf t
+R1(config)#int f0/0
+
+R1(config-if)#no shutdown
+
+R1(config-if)#int f0/0.10
+R1(config-subif)#encapsulation dot1Q 10
+R1(config-subif)#ip address 192.168.10.1 255.255.255.0
+R1(config-subif)#int f0/0.20
+R1(config-subif)#encapsulation dot1Q 20
+R1(config-subif)#ip address 192.168.20.1 255.255.255.0
+R1(config-subif)#end
+R1#
+
+
+R1#sh run 
+!
+version 15.1
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname R1
+!
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+!
+ip dhcp pool VOICE
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ option 150 ip 192.168.20.1
+!
+ip cef
+no ipv6 cef
+!
+license udi pid CISCO2811/K9 sn FTX1017C35F-
+!
+spanning-tree mode pvst
+!
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ shutdown
+!
+interface FastEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+!
+interface FastEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.1 255.255.255.0
+!
+interface FastEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ shutdown
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+ip classless
+!
+ip flow-export version 9
+!
+telephony-service
+ max-ephones 2
+ max-dn 2
+ ip source-address 192.168.20.1 port 2000
+!
+ephone-dn 1
+ number 2010
+!
+ephone-dn 2
+ number 2020
+!
+ephone 1
+ device-security-mode none
+ mac-address 0001.437B.4124
+ type 7960
+ button 1:1
+!
+ephone 2
+ device-security-mode none
+ mac-address 00D0.D357.40D9
+ type 7960
+ button 1:2
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ login
+!
+
+end
+
+R1#
+
+
+C:\>ping 192.168.10.12
+
+
+
+-- QoS --
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
