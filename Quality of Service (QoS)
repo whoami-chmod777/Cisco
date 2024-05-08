@@ -3,7 +3,7 @@
 
 • Quality of Service (QoS)
 • Voice VLAN
-• QoS
+• PCP/CoS
 
 
 -- Quality of Service (QoS) --
@@ -265,21 +265,105 @@ C:\>ping 192.168.10.12
 
 
 
--- QoS --
+-- PCP/CoS --
+
+-- DSCP --
+
+R1(config)#class-map TEST
+R1(config-cmap)#match dscp ?
+<0-63> Differentiated services codepoint value
+af11 Match packets with AF11 dscp (001010)
+af12 Match packets with AF12 dscp (001100)
+af13 Match packets with AF13 dscp (001110)
+af21 Match packets with AF21 dscp (010010)
+af22 Match packets with AF22 dscp (010100)
+af23 Match packets with AF23 dscp (010110)
+af31 Match packets with AF31 dscp (011010)
+af32 Match packets with AF32 dscp (011100)
+af33 Match packets with AF33 dscp (011110)
+af41 Match packets with AF41 dscp (100010)
+af42 Match packets with AF42 dscp (100100)
+af43 Match packets with AF43 dscp (100110)
+cs1 Match packets with CS1(precedence 1) dscp (001000)
+cs2 Match packets with CS2(precedence 2) dscp (010000)
+cs3 Match packets with CS3(precedence 3) dscp (011000)
+cs4 Match packets with CS4(precedence 4) dscp (100000)
+cs5 Match packets with CS5(precedence 5) dscp (101000)
+cs6 Match packets with CS6(precedence 6) dscp (110000)
+cs7 Match packets with CS7(precedence 7) dscp (111000)
+default Match packets with default dscp (000000)
+ef Match packets with EF dscp (101110)
 
 
+-- Example Configuration --
+
+Watch the video and follow along in the CLI to learn some basic QoS configurations.
+*QoS configuration isn't a CCNA exam topic. 
+
+Configure the following QoS settings on R1 and apply them outbound on interface G0/0/0:
+
+1. Mark HTTPS traffic as AF31
+*--Provide minimum 10% bandwidth as a priority queue
+
+2. Mark HTTP traffic as AF32
+*--Provide minimum 10% bandwidth
+
+3. Mark ICMP traffic as CS2
+*--Provide minimum 5% bandwidth
+
+4. Use simulation mode to view the DSCP markings of packets:
+   -when pinging jeremysitlab.com from PC1
+   -when accessing jeremysitlab.com from PC1 via HTTP
+   -when accessing jeremysitlab.com from PC1 via HTTPS
 
 
+R1>en
+R1#conf t
+R1(config)#class-map HTTPS_MAP
+R1(config-cmap)#match protocol https
+R1(config-cmap)#exit
+R1(config)#class-map HTTP_MAP
+R1(config-cmap)#match protocol http
+R1(config-cmap)#exit
+R1(config)#class-map ICMP_MAP
+R1(config-cmap)#match protocol icmp
+R1(config-cmap)#exit
+R1(config)#
+
+R1(config)#do sh run | section class-map
+class-map match-all HTTPS_MAP
+ match protocol https
+class-map match-all HTTP_MAP
+ match protocol http
+class-map match-all ICMP_MAP
+ match protocol icmp
 
 
+R1(config)#
+R1(config)#policy-map G0/0/0_OUT
+R1(config-pmap)#class HTTPS_MAP
+R1(config-pmap-c)#set ip dscp AF31
+R1(config-pmap-c)#priority percent 10
+R1(config-pmap-c)#exit
+R1(config-pmap)#class HTTP_MAP
+R1(config-pmap-c)#set ip dscp AF32
+R1(config-pmap-c)#bandwidth percent 10
+R1(config-pmap-c)#exit
+R1(config-pmap)#class ICMP_MAP
+R1(config-pmap-c)#set ip dscp 5
+R1(config-pmap-c)#bandwidth percent 5
+R1(config-pmap-c)#exit
+R1(config-pmap)#exit
+R1(config)#end
+R1#
 
-
-
-
-
-
-
-
-
+R1#sh run | section class-map
+class-map match-all HTTPS_MAP
+ match protocol https
+class-map match-all HTTP_MAP
+ match protocol http
+class-map match-all ICMP_MAP
+ match protocol icmp
+R1#
 
 
