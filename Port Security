@@ -1,0 +1,408 @@
+
+-- Enabling Port Security --
+
+SW1(config)#interface g0/1
+SW1(config-if)#switchport port-security
+Command rejected: GigabitEthernet0/1 is a dynamic port.
+
+SW1(config-if)#do show int g0/1 switchport
+Name: Gi0/1
+Switchport: Enabled
+Administrative Mode: dynamic auto
+Operational Mode: static access
+![output omitted]
+
+SW1(config-if)#switchport mode access
+
+SW1(config-if)#do show int g0/1 switchport
+Name: Gi0/1
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+
+SW1(config-if)#switchport port-security
+SW1(config-if)#
+
+
+Port security can be enabled on access ports or trunks ports 
+switchport mode access = OK
+switchport mode trunk = OK
+switchport mode dynamic auto = not working 
+switchport mode dynamic desirable = not working
+
+
+
+-- Show Port Security Interfaces --
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Shutdown
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 0
+Configured MAC Addresses : 0
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 0000.0000.0000:0
+Security Violation Count : 0
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Shutdown
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 1
+Configured MAC Addresses : 0
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 000a.000a.000a:1
+Security Violation Count : 0
+
+SW1#show interfaces status
+Port     Name     Status         Vlan     Duplex         Speed Type
+Gi0/0             connected         1     auto auto         unknown
+Gi0/1             err-disabled      1     auto auto         unknown
+
+
+
+-- Re-enabling an Interface (Manually) --
+
+SW1(config)#interface g0/1
+SW1(config-if)#shutdown
+SW1(config-if)#no shutdown
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Shutdown
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 0
+Configured MAC Addresses : 0
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 0000.0000.0000:0
+Security Violation Count : 0
+
+
+-- Re-enabling an Interface (ErrDisable Recovery) --
+
+SW1#show errdisable recovery
+ErrDisable Reason Timer Status
+----------------- --------------
+arp-inspection Disabled
+bpduguard Disabled
+channel-misconfig (STP) Disabled
+dhcp-rate-limit Disabled
+dtp-flap Disabled
+![output omitted due to length]
+psecure-violation Disabled
+security-violation Disabled
+sfp-config-mismatch Disabled
+storm-control Disabled
+udld Disabled
+unicast-flood Disabled
+vmps Disabled
+psp Disabled
+dual-active-recovery Disabled
+evc-lite input mapping fa Disabled
+Recovery command: "clear Disabled
+
+Timer interval: 300 seconds
+
+Interfaces that will be enabled at the next timeout:
+
+
+SW1(config)#errdisable recovery cause psecure-violation
+SW1(config)#errdisable recovery interval 180
+
+SW1#show errdisable recovery
+ErrDisable Reason Timer Status
+----------------- --------------
+![output omitted due to length]
+psecure-violation Enabled
+![output omitted due to length]
+
+Timer interval: 180 seconds
+
+Interfaces that will be enabled at the next timeout:
+Interface Errdisable reason Time left(sec)
+--------- ----------------- --------------
+Gi0/1     psecure-violation     149
+
+
+Violation Modes
+
+● Shutdown
+● Restrict
+● Protect
+
+
+-- Violation mode: Restrict --
+
+SW1(config-if)#switchport port-security
+SW1(config-if)#switchport port-security mac-address 000a.000a.000a
+SW1(config-if)#switchport port-security violation restrict
+ 
+*May 23 22:54:09.951: %PORT_SECURITY-2-PSECURE_VIOLATION: Security violation occurred, caused by MAC
+address 000b.000b.000b on port GigabitEthernet0/1.
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Restrict
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 1
+Configured MAC Addresses : 1
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 000b.000b.000b:1
+Security Violation Count : 12
+
+
+-- Violation mode: Protect --
+
+SW1(config-if)#switchport port-security
+SW1(config-if)#switchport port-security mac-address 000a.000a.000a
+SW1(config-if)#switchport port-security violation protect
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Protect
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 1
+Configured MAC Addresses : 1
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 000b.000b.000b:1
+Security Violation Count : 0
+
+
+-- Secure MAC address aging --
+
+SW1(config-if)#switchport port-security aging time 30
+SW1(config-if)#switchport port-security aging type inactivity
+SW1(config-if)#switchport port-security aging static
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Shutdown
+Aging Time : 30 mins
+Aging Type : Inactivity
+SecureStatic Address Aging : Enabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 1
+Configured MAC Addresses : 1
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 000a.000a.000a:1
+Security Violation Count : 0
+
+SW1#show port-security
+Secure Port MaxSecureAddr CurrentAddr SecurityViolation Security Action
+               (Count)      (Count)         (Count) 
+---------------------------------------------------------------------------
+        Gi0/1             1             1             0             Shutdown
+---------------------------------------------------------------------------
+Total Addresses in System (excluding one mac per port) : 0
+Max Addresses limit in System (excluding one mac per port) : 4096
+
+
+SW1#show port-security interface g0/1
+Port Security : Enabled
+Port Status : Secure-up
+Violation Mode : Shutdown
+Aging Time : 0 mins
+Aging Type : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses : 1
+Total MAC Addresses : 1
+Configured MAC Addresses : 0
+Sticky MAC Addresses : 0
+Last Source Address:Vlan : 000a.000a.000a:1
+Security Violation Count : 0
+
+
+SW1(config-if)#switchport port-security aging time minutes
+SW1(config-if)#switchport port-security aging type {absolute | inactivity}
+SW1(config-if)#switchport port-security mac-address x.x.x)
+SW1(config-if)#switchport port-security aging static
+
+
+
+-- Sticky Secure MAC Addresses --
+
+SW1(config-if)#switchport port-security
+SW1(config-if)#switchport port-security mac-address sticky
+SW1(config-if)#do show running-config interface g0/1
+!
+interface GigabitEthernet0/1
+ switchport mode access 
+ switchport port-security mac-address sticky 
+ switchport port-security mac-address sticky 000a.000a.000a 
+ switchport port-security 
+ negotiation auto
+
+
+
+-- MAC Address Table --
+
+SW1#show mac address-table secure
+            Mac Address Table
+-------------------------------------------
+Vlan Mac Address         Type         Ports
+---- -----------         --------     ----- 
+1     000a.000a.000a     STATIC        Gi0/1 
+Total Mac Addresses for this criterion: 1
+
+
+-- Command Review -- 
+
+SW1# show mac address-table secure
+SW1# show port-security
+SW1# show port-security interface interface
+SW1# show errdisable recovery
+
+SW1(config)# errdisable recovery cause psecure-violation
+SW1(config)# errdisable recovery interval seconds
+
+SW1(config-if)# switchport port-security
+SW1(config-if)# switchport port-security mac-address mac-address
+SW1(config-if)# switchport port-security mac-address sticky
+SW1(config-if)# switchport port-security violation {shutdown | restrict | protect}
+SW1(config-if)# switchport port-security aging time minutes
+SW1(config-if)# switchport port-security aging type {absolute | inactivity}
+SW1(config-if)# switchport port-security aging static
+
+
+-- Example Configuration --
+
+1. Configure port security on the following interfaces:
+#SW1 F0/1, F0/2, F0/3#
+Violation mode: Shutdown
+Maximum addresses: 1
+Sticky learning: Disabled
+Aging time: 1 hour
+
+#SW2 G0/1#
+Violation mode: Restrict
+Maximum addresses: 4
+Sticky learning: Enabled
+
+2. Trigger port security violations on SW1 and SW2 (for example by connecting another PC) and observe the actions taken by each switch.
+
+
+#1
+
+SW1>en
+SW1#conf t
+SW1(config)#int range f0/1-3
+SW1(config-if-range)#switchport port-security aging time 60
+SW1(config-if-range)#switchport port-security 
+Command rejected: FastEthernet0/1 is a dynamic port.
+Command rejected: FastEthernet0/2 is a dynamic port.
+Command rejected: FastEthernet0/3 is a dynamic port.
+SW1(config-if-range)#
+
+SW1(config-if-range)#do sh int f0/1 switchport
+Name: Fa0/1
+Switchport: Enabled
+Administrative Mode: dynamic auto
+Operational Mode: static access
+Administrative Trunking Encapsulation: dot1q
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: On
+Access Mode VLAN: 1 (default)
+Trunking Native Mode VLAN: 1 (default)
+Voice VLAN: none
+Administrative private-vlan host-association: none
+Administrative private-vlan mapping: none
+Administrative private-vlan trunk native VLAN: none
+Administrative private-vlan trunk encapsulation: dot1q
+Administrative private-vlan trunk normal VLANs: none
+Administrative private-vlan trunk private VLANs: none
+Operational private-vlan: none
+Trunking VLANs Enabled: All
+Pruning VLANs Enabled: 2-1001
+Capture Mode Disabled
+Capture VLANs Allowed: ALL
+Protected: false
+Unknown unicast blocked: disabled
+Unknown multicast blocked: disabled
+Appliance trust: none
+SW1(config-if-range)#
+
+SW1(config-if-range)#switchport mode access 
+SW1(config-if-range)#switchport port-security 
+SW1(config-if-range)#end
+SW1#wr
+SW1#
+
+SW1#sh port-security interface fastEthernet 0/1
+Port Security              : Enabled
+Port Status                : Secure-up
+Violation Mode             : Shutdown
+Aging Time                 : 60 mins
+Aging Type                 : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses      : 1
+Total MAC Addresses        : 0
+Configured MAC Addresses   : 0
+Sticky MAC Addresses       : 0
+Last Source Address:Vlan   : 0000.0000.0000:0
+Security Violation Count   : 0
+SW1#
+
+
+
+#2
+
+SW2>
+SW2>en
+SW2#conf t
+SW2(config)#int g0/1
+SW2(config-if)#switchport port-security violation restrict 
+SW2(config-if)#switchport port-security maximum 4
+SW2(config-if)#switchport port-security mac-address sticky 
+SW2(config-if)#switchport mode access 
+SW2(config-if)#switchport port-security 
+SW2(config-if)#end
+SW2#wr
+SW2#
+
+SW2#sh port-security interface gigabitEthernet 0/1
+Port Security              : Enabled
+Port Status                : Secure-up
+Violation Mode             : Restrict
+Aging Time                 : 0 mins
+Aging Type                 : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses      : 4
+Total MAC Addresses        : 0
+Configured MAC Addresses   : 0
+Sticky MAC Addresses       : 0
+Last Source Address:Vlan   : 0000.0000.0000:0
+Security Violation Count   : 0
+SW2#sh run
+!
+interface GigabitEthernet0/1
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 4
+ switchport port-security mac-address sticky 
+ switchport port-security violation restrict 
+ switchport port-security mac-address sticky 0060.471C.1D19
+!
+SW2#
+
+SW2#show mac address-table
