@@ -1,0 +1,245 @@
+
+-- Dynamic ARP Inspection --
+
+SW1#show ip dhcp snooping binding
+MacAddress IpAddress Lease(sec) Type VLAN Interface
+------------------ --------------- ---------- ------------- ---- --------------------
+0C:29:2F:18:79:00 192.168.100.10 86294 dhcp-snooping 1 GigabitEthernet0/3
+0C:29:2F:90:91:00 192.168.100.11 86302 dhcp-snooping 1 GigabitEthernet0/1
+0C:29:2F:67:E9:00 192.168.100.12 86314 dhcp-snooping 1 GigabitEthernet0/2
+Total number of bindings: 3
+
+
+-- DAI Configuration --
+
+SW2(config)#ip arp inspection vlan 1
+SW2(config)#interface range g0/0 - 1
+SW2(config-if-range)#ip arp inspection trust
+
+SW1(config)#ip arp inspection vlan 1
+SW1(config)#interface g0/0
+SW1(config-if)#ip arp inspection trust
+
+
+DHCP snooping requires two commands to enable it:
+
+ip dhcp snooping
+ip dchp snooping vlan vlan-number
+
+DAI only requires one:
+ip arp inspection vlan vlan-number
+
+
+SW1#show ip arp inspection interfaces
+
+
+-- DAI Rate Limiting --
+
+SW1(config)#interface range g0/1 - 2
+SW1(config-if-range)#ip arp inspection limit rate 25 burst interval 2
+SW1(config-if-range)#interface range g0/3
+SW1(config-if)#ip arp inspection limit rate 10
+SW1(config-if)#do show ip arp inspection interfaces
+
+
+Interface         Trust State     Rate (pps)     Burst Interval
+---------------   -----------     ----------     -------------- 
+Gi0/0             Trusted               None            N/A 
+Gi0/1             Untrusted             25                 2
+Gi0/2             Untrusted             25                 2
+Gi0/3             Untrusted             10                 1
+![output omitted]
+
+SW1(config)#errdisable recovery cause arp-inspection
+SW1(config)#do show errdisable recovery
+ErrDisable Reason     Timer Status
+-----------------     --------------
+arp-inspection         Enabled
+![outputed omitted]
+
+
+re-enabled the interface:
+
+1: shutdown and no shutdown
+2: errdisable recovery cause arp-inspection
+
+
+-- DAI Optional Checks --
+
+SW1(config)#ip arp inspection validate ?
+    dst-mac Validate destination MAC address
+    ip Validate IP addresses
+    src-mac Validate source MAC address
+
+
+SW1(config)#ip arp inspection validate dst-mac
+SW1(config)#ip arp inspection validate ip
+SW1(config)#ip arp inspection validate src-mac
+
+SW1(config)#do show running-config | include validate 
+ip arp inspection validate src-mac
+
+SW1(config)#ip arp inspection validate ip src-mac dst-mac
+
+SW1(config)#do show running-config | include validate
+ip arp inspection validate src-mac dst-mac ip
+
+
+-- ARP ACLs --
+
+SW2#show ip dhcp snooping binding
+MacAddress IpAddress Lease(sec) Type VLAN Interface
+------------------ --------------- ---------- ------------- ---- --------------------
+0C:29:2F:18:79:00 192.168.1.12 79226 dhcp-snooping 1 GigabitEthernet0/1
+0C:29:2F:90:91:00 192.168.1.10 79188 dhcp-snooping 1 GigabitEthernet0/1
+0C:29:2F:67:E9:00 192.168.1.11 79210 dhcp-snooping 1 GigabitEthernet0/1
+Total number of bindings: 3
+
+!SRV1 has a static IP address of 192.168.1.100, so it does not have an entry in SW2’s DHCP 
+!snooping binding table.
+
+*Jun 19 05:56:15.538: %SW_DAI-4-DHCP_SNOOPING_DENY: 1 Invalid ARPs (Req) on Gi0/2, vlan 1.
+([0c29.2f1e.7700/192.168.1.100/0000.0000.0000/192.168.1.1/05:56:14 UTC Sat Jun 19 2021])
+
+SW2(config)#arp access-list ARP-ACL-1
+SW2(config-arp-nacl)#permit ip host 192.168.1.100 mac host 0c29.2f1e.7700
+
+SW2(config)#ip arp inspection filter ARP-ACL-1 vlan 1
+
+
+SW2#show ip arp inspection
+
+Source Mac Validation      : Enabled 
+Destination Mac Validation : Enabled
+IP Address Validation      : Enabled 
+
+Vlan Configuration Operation ACL Match Static ACL
+---- ------------- --------- --------- ----------
+1 Enabled Active ARP-ACL-1 No
+
+Vlan     ACL Logging     DHCP Logging     Probe Logging
+----     -----------     ------------     -------------
+1         Deny            Deny              Off 
+
+Vlan Forwarded Dropped DHCP Drops ACL Drops
+---- --------- ------- ---------- ---------
+1           56     4           4         0 
+
+Vlan DHCP Permits ACL Permits Probe Permits Source MAC Failures
+---- ------------ ----------- ------------- -------------------
+1     0           1           0              0 
+
+Vlan Dest MAC Failures IP Validation Failures Invalid Protocol Data
+---- ----------------- ---------------------- ---------------------
+
+Vlan Dest MAC Failures IP Validation Failures Invalid Protocol Data
+---- ----------------- ---------------------- ---------------------
+1     0                 0                     0
+
+
+-- Command Review --
+
+SW1(config)# ip arp inspection vlan vlan-number
+SW1(config)# errdisable recovery cause arp-inspection
+SW1(config)# ip arp inspection validate (src-mac | dst-mac | ip)
+SW1(config-if)# ip arp inspection trust
+SW1(config-if)# ip arp inspection limit rate packets [burst interval seconds]
+
+SW1(config)# arp access-list name
+SW1(config-arp-nacl)# permit ip host ip-address mac host mac-address
+SW1(config)# ip arp inspection filter arp-acl-name vlan vlan-number
+
+SW1# show ip arp inspection
+SW1# show ip arp inspection interfaces
+
+
+
+-- Dynamic ARP Inspection Example Configuration --
+
+1. Configure R1 as a DHCP server.
+    Exclude 192.168.1.1 - 192.168.1.9 from the pool
+    Default gateway: R1
+
+2. Configure DHCP snooping on SW1 and SW2.
+
+3. Configure DAI on SW1 and SW2.
+  -Enable all additional validation checks
+  -Trust ports connected to a router or switch
+
+#1
+R1>en
+R1#conf t
+R1(config)#ip dhcp excluded-address 192.168.1.1 192.168.1.9
+R1(config)#ip dhcp pool POOL1
+R1(dhcp-config)#network 192.168.1.0 255.255.255.0
+R1(dhcp-config)#default-router 192.168.1.1
+R1(dhcp-config)#end
+R1#wr
+R1#
+
+R1#sh run | sec dhcp
+ip dhcp excluded-address 192.168.1.1 192.168.1.9
+ip dhcp pool POOL1
+ network 192.168.1.0 255.255.255.0
+ default-router 192.168.1.1
+R1#
+
+
+#2
+SW2>
+SW2>en
+SW2#conf t
+SW2(config)#ip dhcp snooping 
+SW2(config)#ip dhcp snooping vlan 1
+SW2(config)#no ip dhcp snooping information option 
+SW2(config)#int g0/1
+SW2(config-if)#ip dhcp snooping trust 
+SW2(config-if)#exit
+SW2(config)#
+
+SW1>
+SW1>en
+SW1#conf t
+SW1(config)#ip dhcp snooping
+SW1(config)#ip dhcp snooping vlan 1
+SW1(config)#no ip dhcp snooping information option 
+SW1(config)#int g0/2
+SW1(config-if)#ip dhcp snooping trust 
+SW1(config-if)#exit
+SW1(config)#
+
+
+#3
+SW2(config)#
+SW2(config)#ip arp inspection vlan 1
+
+SW2(config)#ip arp inspection validate ?
+  dst-mac  Validate destination MAC address
+  ip       Validate IP address
+  src-mac  Validate source MAC address
+
+SW2(config)#ip arp inspection validate dst-mac ip src-mac 
+SW2(config)#int g0/1
+SW2(config-if)#ip arp inspection trust 
+SW2(config-if)#end
+SW2#
+
+SW2#sh run | sec arp
+ip arp inspection vlan 1
+ip arp inspection validate src-mac dst-mac ip
+ ip arp inspection trust
+SW2#
+
+
+SW1(config)#
+SW1(config)#ip arp inspection vlan 1
+SW1(config)#ip arp inspection validate dst-mac ip src-mac 
+SW1(config)#int range g0/1-2
+SW1(config-if-range)#ip arp inspection trust 
+SW1(config-if-range)#end
+SW1#
+
+
+
+
+
