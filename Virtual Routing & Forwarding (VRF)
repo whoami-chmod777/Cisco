@@ -1,0 +1,103 @@
+
+Virtual  routing and forwarding provides a path to configuring multiple routing  instances on either a router or Layer 3 switch. The purpose is to keep  customer traffic and routing separate but through the same hardware.
+
+
+-- VRF Configuration (Virtual Routing & Forwarding) --
+
+1. Create VRFs:
+SPR1(config)# ip vrf name
+
+2. Assign interfaces to VRFs:
+SPR1(config-if)# ip vrf forwarding name
+
+
+-- Example Configuration --
+
+SPR1(config)# interface g0/0
+SPR1(config-if)# ip address 192.168.1.1 255.255.255.252
+SPR1(config-if)# no shutdown
+
+SPR1(config-if)# interface g0/1
+SPR1(config-if)# ip address 192.168.11.1 255.255.255.252
+SPR1(config-if)# no shutdown
+
+SPR1(config-if)# interface g0/2
+SPR1(config-if)# ip address 192.168.1.1 255.255.255.252
+% 192.168.1.0 overlaps with GigabitEthernet0/0
+
+SPR1(config-if)# ip address 192.168.1.2 255.255.255.252
+% 192.168.1.0 overlaps with GigabitEthernet0/0
+
+G0/2 cannot use IP address 192.168.1.1 because it is in the same
+subnet as G0/0 (in this case it’s the exact same IP address).
+
+Even if the IP address is different, G0/2 cannot be configured in
+the same subnet as G0/0.
+
+
+SPR1(config)# ip vrf CUSTOMER1
+SPR1(config-vrf)# ip vrf CUSTOMER2
+SPR1(config-vrf)# do show ip vrf
+Name                 Default RD         Interfaces
+CUSTOMER1             <not set>
+CUSTOMER2             <not set>
+
+
+SPR1(config-vrf)# interface g0/0
+SPR1(config-if)# ip vrf forwarding CUSTOMER1
+% Interface GigabitEthernet0/0 IPv4 disabled and address(es) removed due to enabling VRF CUSTOMER1
+SPR1(config-if)# ip address 192.168.1.1 255.255.255.252
+
+SPR1(config-if)# interface g0/1
+SPR1(config-if)# ip vrf forwarding CUSTOMER1
+% Interface GigabitEthernet0/1 IPv4 disabled and address(es) removed due to enabling VRF CUSTOMER1
+SPR1(config-if)# ip address 192.168.11.1 255.255.255.252
+
+SPR1(config-if)# interface g0/2
+SPR1(config-if)# ip vrf forwarding CUSTOMER2
+SPR1(config-if)# ip address 192.168.1.1 255.255.255.252
+SPR1(config-if)# no shutdown
+
+SPR1(config-if)# interface g0/3
+SPR1(config-if)# ip vrf forwarding CUSTOMER2
+SPR1(config-if)# ip address 192.168.12.1 255.255.255.252
+SPR1(config-if)# no shutdown
+
+SPR1(config-if)# do show ip vrf
+Name             Default RD         Interfaces
+CUSTOMER1         <not set>         Gi0/0
+                                    Gi0/1
+CUSTOMER2         <not set>         Gi0/2
+                                    Gi0/3
+
+
+SPR1# show ip route vrf CUSTOMER1
+
+Routing Table: CUSTOMER1
+!output omitted
+
+    192.168.1.0/24 is variably subnetted, 2 subnets, 2 masks
+C     192.168.1.0/30 is directly connected, GigabitEthernet0/0
+L     192.168.1.1/32 is directly connected, GigabitEthernet0/0
+    192.168.11.0/24 is variably subnetted, 2 subnets, 2 masks
+C     192.168.11.0/30 is directly connected, GigabitEthernet0/1
+L     192.168.11.1/32 is directly connected, GigabitEthernet0/1
+
+SPR1# show ip route vrf CUSTOMER2
+
+Routing Table: CUSTOMER2
+!output omitted
+
+    192.168.1.0/24 is variably subnetted, 2 subnets, 2 masks
+C     192.168.1.0/30 is directly connected, GigabitEthernet0/2
+L     192.168.1.1/32 is directly connected, GigabitEthernet0/2
+    192.168.12.0/24 is variably subnetted, 2 subnets, 2 masks
+C     192.168.12.0/30 is directly connected, GigabitEthernet0/3
+L     192.168.12.1/32 is directly connected, GigabitEthernet0/3
+
+
+SPR1# ping vrf CUSTOMER1 192.168.1.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.1.1, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
