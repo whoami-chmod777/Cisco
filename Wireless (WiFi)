@@ -1,0 +1,194 @@
+
+-- Switch Configuration --
+
+SW1(config)#vlan 10
+SW1(config-vlan)#name Management
+SW1(config-vlan)#vlan 100
+SW1(config-vlan)#name Internal
+SW1(config-vlan)#vlan 200
+SW1(config-vlan)#name Guest
+
+SW1(config)#int range f0/6 - 8
+SW1(config-if-range)#switchport mode access
+SW1(config-if-range)#switchport access vlan 10
+SW1(config-if-range)#spanning-tree portfast
+
+SW1(config-if-range)#interface range f0/1 - 2
+SW1(config-if-range)#channel-group 1 mode on
+
+SW1(config-if-range)#interface port-channel 1
+SW1(config-if)#switchport mode trunk
+SW1(config-if)#switchport trunk allowed vlan 10,100,200
+
+
+SW1(config)#interface vlan 10
+SW1(config-if)#ip address 192.168.1.1 255.255.255.0
+SW1(config-if)#interface vlan 100
+SW1(config-if)#ip address 10.0.0.1 255.255.255.0
+SW1(config-if)#interface vlan 200
+SW1(config-if)#ip address 10.1.0.1 255.255.255.0
+
+
+SW1(config)#ip dhcp pool VLAN10
+SW1(dhcp-config)#network 192.168.1.0 255.255.255.0
+SW1(dhcp-config)#default-router 192.168.1.1
+SW1(dhcp-config)#option 43 ip 192.168.1.100
+
+SW1(config)#ip dhcp pool VLAN100
+SW1(dhcp-config)#network 10.0.0.0 255.255.255.0
+SW1(dhcp-config)#default-router 10.0.0.1
+
+SW1(config)#ip dhcp pool VLAN200
+SW1(dhcp-config)#network 10.1.0.0 255.255.255.0
+SW1(dhcp-config)#default-router 10.1.0.1
+
+SW1(config)#ntp master
+
+
+-- WLC Initial Setup --
+
+Welcome to the Cisco Wizard Configuration Tool
+Use the '-' character to backup
+
+Would you like to terminate autoinstall? [yes]: 
+System Name [Cisco_10:65:64] (31 characters max): WLC1
+Enter Administrative User Name (24 characters max): admin
+Enter Administrative Password (3 to 24 characters): *********
+Re-enter Administrative Password : *********
+
+Enable Link Aggregation (LAG) [yes][NO]: yes
+Management Interface IP Address: 192.168.1.100
+Management Interface Netmask: 255.255.255.0
+Management Interface Default Router: 192.168.1.1
+Management Interface VLAN Identifier (0 = untagged): 10
+Management Interface DHCP Server IP Address: 192.168.1.1
+
+Virtual Gateway IP Address: 172.16.1.1
+Multicast IP Address: 239.239.239.239
+
+Mobility/RF Group Name: jITlab
+Network Name (SSID): Internal
+
+Configure DHCP Bridging Mode [yes][NO]: no
+
+Allow Static IP Addresses [YES][no]: yes
+
+Configure a RADIUS Server now? [YES][no]: no
+Warning! The default WLAN security policy requires a RADIUS server.
+Please see documentation for more details.
+
+Enter Country Code list (enter 'help' for a list of countries) [US]: FR
+
+Enable 802.11b Network [YES][no]:
+Enable 802.11a Network [YES][no]:
+Enable 802.11g Network [YES][no]:
+Enable Auto-RF [YES][no]:
+
+Configure a NTP server now? [YES][no]: yes
+Enter the NTP server's IP address: 192.168.1.1
+Enter a polling interval between 3600 and 604800 secs: 3600
+
+Configuration correct? If yes, system will save it and reset. [yes][NO]:
+yes
+
+Configuration saved!
+Resetting system with new configuration...
+
+
+
+
+
+
+-- Example Wireless Configuration --
+
+VLAN/WLAN info:
+VLAN10 (Management)= 172.16.1.0/24
+VLAN100 = 10.0.0.0/24, SSID = Internal
+VLAN200 = 10.1.0.0/24, SSID = Guest
+
+1. Use the web browser on PC1 to access the GUI of WLC1.
+Username: admin
+Password: Cisco123
+*you must use HTTPS
+
+2. Spend some time familiarizing yourself with the WLC GUI.
+What information can be viewed from each tab?
+What is the current state of the network?
+
+3. Configure dynamic interfaces for the Internal & Guest WLANs.
+4. Create the Internal & Guest WLANs using WPA2+PSK.
+5. Add a wireless client to the network and associate it with an AP.
+
+
+Switch>en
+Switch#conf t
+Switch(config)#ip dhcp excluded-address 10.0.0.1 10.0.0.10
+Switch(config)#ip dhcp excluded-address 10.1.0.1 10.1.0.10
+Switch(config)#ip dhcp excluded-address 172.16.1.1 172.16.1.10
+
+Switch(config)#ip dhcp pool VLAN10
+Switch(dhcp-config)#network 172.16.1.0 255.255.255.0
+Switch(dhcp-config)#default-router 172.16.1.1
+Switch(dhcp-config)#option 43 ip 172.16.1.10
+Switch(dhcp-config)#
+Switch(dhcp-config)#ip dhcp pool VLAN100
+Switch(dhcp-config)#network 10.0.0.0 255.255.255.0
+Switch(dhcp-config)#default-router 10.0.0.1
+Switch(dhcp-config)#
+Switch(dhcp-config)#ip dhcp pool VLAN200
+Switch(dhcp-config)#network 10.1.0.0 255.255.255.0
+Switch(dhcp-config)#default-router 10.1.0.1
+Switch(dhcp-config)#exit
+Switch(config)#
+
+Switch(config)#interface vlan 10
+Switch(config-if)#ip address 172.16.1.1 255.255.255.0
+Switch(config-if)#interface Vlan100
+Switch(config-if)# ip address 10.0.0.1 255.255.255.0
+Switch(config-if)#interface Vlan200
+Switch(config-if)#ip address 10.1.0.1 255.255.255.0
+Switch(config-if)#exit
+Switch(config)#
+
+Switch(config)#interface gigabitEthernet 1/0/1
+Switch(config-if)#switchport mode trunk 
+Switch(config-if)#switchport trunk native vlan 10
+Switch(config-if)#switchport trunk allowed vlan 10,100,200
+Switch(config-if)#exit
+
+(config-if)#interface GigabitEthernet1/0/2
+(config-if)#port mode access 
+(config-if)#port access vlan 10
+(config-if)#port nonegotiate 
+(config-if)#spanning-tree portfast 
+
+(config-if)#interface GigabitEthernet1/0/3
+(config-if)#port mode access 
+(config-if)#port access vlan 10
+(config-if)#port nonegotiate 
+(config-if)#spanning-tree portfast 
+
+(config-if)#interface GigabitEthernet1/0/4
+(config-if)#port mode access 
+(config-if)#port access vlan 10
+(config-if)#port nonegotiate 
+(config-if)#spanning-tree portfast 
+(config-if)#end
+Switch#wr
+
+
+Switch# conf t
+Switch(config)#ntp master 
+Switch(config)#end
+Switch#
+
+
+
+
+
+
+
+
+
+
+
