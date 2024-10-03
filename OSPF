@@ -353,7 +353,6 @@ R3#
 
 R4#show ip route
 R4#sh ip ospf interface g0/0
-
 R4#sh ip ospf neighbor 
 
 
@@ -387,7 +386,7 @@ R5#show ip ospf database
 R5#show ip ospf interface
 
 
-
+-- OSPF Commands Overview --
 
 
 
