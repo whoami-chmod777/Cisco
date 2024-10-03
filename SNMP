@@ -1,0 +1,77 @@
+
+-- Simple Network Management Protocol (SNMP) --
+
+SNMP is used to monitor and manage devices on a network. 
+
+It involves three main components:
+1. SNMP Manager (Network Management System) - typically run on a PC and collects data from network devices.
+2. SNMP Agent - installed on network devices (routers, switches) and sends data to the SNMP manager.
+3. Management Information Base (MIB) - a collection of information that the SNMP manager can query or set on the agent.
+
+SNMP Versions:
+1. SNMPv1: The earliest version, considered outdated.
+2. SNMPv2c: Updated version with better performance, but still limited security using community strings.
+3. SNMPv3: Provides enhanced security features, including message integrity, authentication, and encryption.
+
+SNMPv1 and SNMPv2c:
+Community Strings: Both versions rely on clear-text passwords (community strings) for authentication.
+- Read-Only (RO): Limits access to retrieving information without making changes.
+- Read-Write (RW): Allows changes to be made to the device’s configuration, which is riskier.
+Vulnerability: Since these passwords are transmitted in plain text, they are vulnerable to interception and attacks (like packet sniffing).
+
+SNMPv3 Enhancements:
+Security: SNMPv3 addresses security concerns by introducing new features:
+- Message Integrity: Ensures the packet wasn’t altered during transit.
+- Authentication: Uses hashed passwords (HMAC-MD5 or HMAC-SHA) to verify the source of the message.
+- Privacy (Encryption): Encrypts the message contents, using 56-bit DES encryption, making it difficult for unauthorized parties to intercept and read.
+
+SNMP Messages:
+1. GET: Manager requests data from the agent.
+2. GET-NEXT: Retrieves the next value in the MIB.
+3. SET: Manager modifies the value in the agent.
+4. TRAP: Agent informs the manager about an event.
+5. INFORM: A reliable alternative to TRAP, available in SNMPv2c.
+6. GETBULK: Used in SNMPv2c for retrieving large data sets efficiently.
+
+
+-- SNMPv2c Configuration Example --
+
+Router(config)# snmp-server community mycommunity RO
+Router(config)# snmp-server host 10.10.10.1 traps version 2c mycommunity
+Router(config)# snmp-server enable traps
+
+
+-- SNMPv3 Configuration Example --
+
+Router(config)# snmp-server group mygroup v3 priv
+Router(config)# snmp-server user myuser mygroup v3 auth sha myauthpass priv aes 128 myprivpass
+Router(config)# snmp-server host 10.10.10.1 version 3 priv myuser
+Router(config)# snmp-server enable traps
+
+
+SNMP helps administrators monitor, troubleshoot, and manage network performance efficiently.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
